@@ -1,0 +1,48 @@
+发热检测类：heat_dec
+
+一、程序主流程：
+	1.首先通过类的初始化读入原图片。						heat_dec（）
+	2.将热像图转化为温度数据图。							double **Graytodigit(Mat inputMat,double tmax,double tmin);
+	3.检测设备闭合轮廓。									vector<Point> getdev();	
+	4.对设备闭合轮廓内的温度信息进行计算，计算温度特征值。	void culate(double **inputData, vector<Point> &dev_contour);
+	5.判断设备故障状态。									int heat_dec::faultdetect()
+
+
+二、功能模块说明：
+
+	一）从热像图转化为温度数据图：	double **Graytodigit(Mat inputMat,double tmax,double tmin);	
+	输入：	温度热像图	inputMat
+			温度上限	tmax
+			温度下限	tmin
+
+	读取热像图右边温度参考条，自上向下将各像素值保存。由于温度是沿参考条线性分布的，所以可以计算获得每个像素值对应的温度。
+	读取每个像素的值，计算其距离参考条上的哪个像素值最接近（欧式距离）就设置其温度为多少。
+
+	输出：	二维double类型数组，size与inputMat一致（高：inputMat.rows, 宽：inputMat.cols），储存每个像素的温度值。
+
+
+	二）检测设备闭合轮廓：	vector<Point> getdev();	
+	输入：	viod
+
+	首先将图像灰度化，在二值化，利用findContours函数获得图像中所有的闭合轮廓集合，利用一些筛选条件将其他轮廓滤除，获得设备轮廓。
+
+	输出：src图片中的设备轮廓 vector<Point>
+
+
+	三）对设备闭合轮廓内的温度信息进行计算，计算温度特征值：	void culate(double **inputData, vector<Point> &dev_contour);
+	输入：	温度数据图	inputData
+			设备闭合轮廓	dev_contour
+
+	生成一个与src同大小的矩阵（每个点的值：1表示点在内面，0表示点在边界上，-1表示点在外部）。
+	计算轮廓内部的 ##平均温度## ，作为设备温度。再计算温度特征值。
+
+	输出：void
+
+
+	四）判断设备故障状态：	int faultdetect()
+	输入：	void
+
+	读入xml配置文件设置报警阈值，根据报警阈值判断设备的故障状态
+
+	输出：int标志位：0正常；1一般缺陷；2严重缺陷；3危机缺陷
+

@@ -1,0 +1,36 @@
+
+<root>
+    <level1>
+		<rule type="trise">
+			<floorlimit>15</floorlimit>
+			<uplimit>9999</uplimit>
+		</rule>
+	</level1>
+	
+	<level2>
+		<rule type="tdev">
+			<floorlimit>60</floorlimit>
+			<uplimit>9999</uplimit>
+		</rule>
+		
+		<rule type="trd">
+			<floorlimit>0.6</floorlimit>
+			<uplimit>9999</uplimit>
+		</rule>
+		
+	</level2>
+	
+	<level3>
+		<rule type="tdev">
+			<floorlimit>80</floorlimit>
+			<uplimit>9999</uplimit>
+		</rule>
+		
+		<rule type="trd">
+			<floorlimit>0.8</floorlimit>
+			<uplimit>9999</uplimit>
+		</rule>
+		
+	</level3>
+	
+</root>

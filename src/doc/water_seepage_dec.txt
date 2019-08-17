@@ -1,0 +1,53 @@
+渗水检测类：water_seepage_dec
+
+一、程序主流程：
+	1.首先通过类的初始化读入原图片。						water_seepage_dec()
+	2.将热像图转化为温度数据图。							double **Graytodigit(Mat inputMat,double tmax,double tmin);
+	3.检测可疑区域											vector<vector<Point>> get_suspicious_area();
+	4.对可疑区域进行筛选，检测出渗水区域					void dec_w(double **inputData, vector<vector<Point>> &suspicious_contour);
+	5.判断设备故障状态。									int faultdetect()
+
+
+二、功能模块说明：
+
+	一）从热像图转化为温度数据图：	double **Graytodigit(Mat inputMat,double tmax,double tmin);	
+	输入：	温度热像图	inputMat
+			温度上限	tmax
+			温度下限	tmin
+
+	读取热像图右边温度参考条，自上向下将各像素值保存。由于温度是沿参考条线性分布的，所以可以计算获得每个像素值对应的温度。
+	读取每个像素的值，计算其距离参考条上的哪个像素值最接近（欧式距离）就设置其温度为多少。
+
+	输出：	二维double类型数组，size与inputMat一致（高：inputMat.rows, 宽：inputMat.cols），储存每个像素的温度值。
+
+
+	二）检测可疑区域：	vector<vector<Point>> get_suspicious_area();
+	输入：	viod
+
+	首先将图像灰度化，在二值化，利用findContours函数获得图像中所有的闭合轮廓集合，利用一些筛选条件简单的滤除一些噪声边界，获得可疑区域。
+
+	输出：src图片中可疑区域轮廓集合 vector<vector<Point>>
+
+
+	三）对可疑区域进行筛选，检测是否存在渗水区域：	void dec_w(double **inputData, vector<vector<Point>> &suspicious_contour);
+	输入：	温度数据图			inputData
+			可疑区域轮廓集合	suspicious_contour
+
+	
+
+	输出：void（直接对suspicious_contour进行修改，保存渗水区域轮廓）
+
+
+	四）判断设备故障状态：	int faultdetect()
+	输入：	void
+
+
+
+	输出：int标志位：0正常；1存在渗水
+
+
+	问题：
+	1、二值化的阈值要调？能不能直接用灰度图灰度检测。					不能
+	2、时间序列不能正确的把同一个轮廓集合归类好，要调整归类阈值。		调好了
+	3、当轮廓丢失后，返回的是之前的最后一次轮廓，与当前图像不符。		就返回最后一次轮廓，不然呢？
+	4、各参数还需调整，或者重新采集图像。								参数调了，需要重新采集图像。

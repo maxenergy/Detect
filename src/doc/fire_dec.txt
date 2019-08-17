@@ -1,0 +1,62 @@
+明火检测类：fire_dec
+
+一、程序主流程：
+	1.初始化视频流											fire_dec（）
+	2.循环读入每帧图像,进行后续处理。						Mat mycapture();
+	3.将热像图转化为温度数据图。							double **Graytodigit(Mat inputMat,double tmax,double tmin);
+	4.检测可疑区域											vector<vector<Point>> get_suspicious_area();
+	5.更新图像特征值（周长面积变化率，似圆度等）			void updatefeature(vector<vector<Point>> suspicious_contour);
+	6.对可疑区域进行筛选，检测出明火区域					void dec_w(double **inputData, vector<vector<Point>> &suspicious_contour);
+	7.判断设备故障状态。									int faultdetect()
+
+
+二、功能模块说明：
+
+	一）初始化视频流：	flash_dec(int Vedioid);
+	输入：	接口句柄 Vedioid
+
+	实现：利用海康威视NVR的sdk，加载视频流。
+
+	输出：	void
+
+	二）循环读取每帧图像： Mat mycapture();
+	输入： void
+
+	实现：根据SDK提供的接口，循环每次从视频流获取一帧图像，用于后续图像处理。
+
+	输出： Opencv的Mat格式的一帧图像，更新src。
+
+	三）从热像图转化为温度数据图：	double **Graytodigit(Mat inputMat,double tmax,double tmin);	
+	输入：	温度热像图	inputMat
+			温度上限	tmax
+			温度下限	tmin
+
+	实现：读取热像图右边温度参考条，自上向下将各像素值保存。由于温度是沿参考条线性分布的，所以可以计算获得每个像素值对应的温度。
+	读取每个像素的值，计算其距离参考条上的哪个像素值最接近（欧式距离）就设置其温度为多少。
+
+	输出：	二维double类型数组，size与inputMat一致（高：inputMat.rows, 宽：inputMat.cols），储存每个像素的温度值。
+
+
+	四）检测可疑区域：	vector<vector<Point>> get_suspicious_area();
+	输入：	viod
+
+	实现：首先将图像灰度化，在二值化，利用findContours函数获得图像中所有的闭合轮廓集合，利用一些筛选条件简单的滤除一些噪声边界，获得可疑区域。
+
+	输出：src图片中可疑区域轮廓集合 vector<vector<Point>>
+
+
+	五）对可疑区域进行筛选，检测是否存在明火区域：	void dec_w(double **inputData, vector<vector<Point>> &suspicious_contour);
+	输入：	温度数据图			inputData
+			可疑区域轮廓集合	suspicious_contour
+
+	实现：
+
+	输出：void（直接对suspicious_contour进行修改，保存明火区域轮廓）
+
+
+	六）判断设备故障状态：	int faultdetect()
+	输入：	void
+
+	实现：
+
+	输出：int标志位：0正常；1存在放电
