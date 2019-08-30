@@ -1,5 +1,8 @@
 #include "capture.h"
 
+mutex keyrgb, keyir, keyuv, keytp;
+bool trgb = true, tir = true, tuv = true, ttp = true;
+
 Point centerofV(const vector<Point> &p)
 {
 	int sumx = 0;
@@ -36,6 +39,32 @@ Mat capture::getframe()
 		else
 			return Mat();
 	}
+}
+
+void capture::lock()
+{
+	trgb = false;
+	tir = false;
+	tuv = false;
+	ttp = false;
+
+	keyrgb.lock();
+	keyir.lock();
+	keyuv.lock();
+	keytp.lock();
+}
+
+void capture::unlock()
+{
+	keyrgb.unlock();
+	keyir.unlock();
+	keyuv.unlock();
+	keytp.unlock();
+
+	trgb = true;
+	tir = true;
+	tuv = true;
+	ttp = true;
 }
 
 double **basedec::Graytodigit(Mat inputMat, double tmax, double tmin)

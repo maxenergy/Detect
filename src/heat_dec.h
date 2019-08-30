@@ -29,9 +29,9 @@ class heat_dec:public basedec
 		double relative_temperature_difference;		//相对温差：两个对应测点之间的温差与其中较热点的温升之比的百分数。
 	};
 public:
-	heat_dec(string Matname):mycapture(Matname,1)
+	heat_dec(shared_ptr<capture> mc) : mycapture(mc)
 	{
-		src = mycapture.getframe();
+		src = mycapture->getframe();
 		imshow("src", src);
 	}
 	void detect();								//测试接口，测试主要流程。
@@ -41,7 +41,7 @@ public:
 	int faultdetect() const;											//返回值：0正常；1一般缺陷；2严重缺陷；3危机缺陷
 
 private:
-	capture mycapture;
+	shared_ptr<capture> mycapture;
 
 	//警报阈值以及标志，三元数组代表三种级别的故障。
 	vector<pair<double, double>> tdev_range[3];			//设备温度的警报范围

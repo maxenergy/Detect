@@ -19,7 +19,7 @@ using namespace std;
 class water_seepage_dec:public basedec
 {
 public:
-	water_seepage_dec(string Filename):mycapture(Filename,0)
+	water_seepage_dec(shared_ptr<capture> mc) :mycapture(mc)
 	{
 
 	}
@@ -28,7 +28,7 @@ public:
 	int faultdetect();
 
 private:
-	capture mycapture;
+	shared_ptr<capture> mycapture;
 	temporaldatam temporalctrl;
 	temporaldatam::fstruct f1;
 };

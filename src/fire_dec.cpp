@@ -2,7 +2,7 @@
 
 void fire_dec::detect()
 {
-	src = mycapture.getframe();
+	src = mycapture->getframe();
 	temporalctrl.addf("area", f_area);
 	temporalctrl.addf("perimeter", f_perimeter);
 	temporalctrl.addf("circle", f_circle);
@@ -38,7 +38,7 @@ void fire_dec::detect()
 		cout << "设备状态类型为：" << failure_alarm_flag << endl << endl;
 
 		cvWaitKey(20);
-		src = mycapture.getframe();
+		src = mycapture->getframe();
 	}
 }
 

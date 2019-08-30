@@ -9,7 +9,7 @@ void water_seepage_dec::detect()
 	//temporalctrl.addf("circle", f_circle);
 	while (1)
 	{
-		src = mycapture.getframe();
+		src = mycapture->getframe();
 		if (src.empty())
 			break;
 		digitdata = Graytodigit(src, 31, 24);

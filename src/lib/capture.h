@@ -1,4 +1,5 @@
 #pragma once
+#include "windows.h"
 #include <iostream>
 #include <sstream>
 #include <time.h>
@@ -7,6 +8,7 @@
 #include <iomanip>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
@@ -36,6 +38,32 @@ struct suspiciousconf
 
 class capture
 {
+public:
+	Mat srcrgb;
+	Mat srcir;
+	Mat srcuv;
+	struct struct_tp
+	{
+		unsigned char *m_pImageBuffer;
+		DWORD m_ImageBufferSize;
+		BYTE *m_pData;
+		DWORD m_dwDataSize;
+		
+	}srctp;
+
+	//初始化
+	void SDK_Init();
+	//登录设备
+	void SDK_Connect();
+	//开启视频流实时更新
+	void Vedio_Stream_Set();
+	//更新当前帧
+	void Vedio_Update();
+	//度温度接口
+	float Get_tem(int gray);
+	//录像接口
+	void Vedio_record();
+
 private:
 	int capture_mode;
 	ifstream txtfile;		//mode0 : 读取图片序列
@@ -62,6 +90,11 @@ public:
 	}
 
 	Mat getframe();
+
+	//lock
+	void lock();
+	//unlocdk
+	void unlock();
 };
 
 class basedec

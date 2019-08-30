@@ -18,7 +18,7 @@ using namespace std;
 class flash_dec :public basedec
 {
 public:
-	flash_dec(string Filename) :mycapture(Filename, 2)
+	flash_dec(shared_ptr<capture> mc) : mycapture(mc)
 	{
 
 	}
@@ -26,7 +26,7 @@ public:
 	int faultdetect();
 
 private:
-	capture mycapture;
+	shared_ptr<capture> mycapture;
 	temporaldatam temporalctrl;
 	temporaldatam::fstruct f1;
 };

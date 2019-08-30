@@ -2,7 +2,8 @@
 
 int main()
 {
-	water_seepage_dec water("G:\\SRC_C\\RGBT_calibration\\water_seepage_dec\\data.txt");
+	shared_ptr<capture> mc = make_shared<capture>("G:\\SRC_C\\RGBT_calibration\\water_seepage_dec\\data.txt", 0);
+	water_seepage_dec water(mc);
 	water.detect();
 
 	cvWaitKey(0);

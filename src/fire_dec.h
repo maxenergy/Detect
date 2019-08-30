@@ -18,13 +18,13 @@ using namespace cv;
 class fire_dec:public basedec
 {
 public:
-	fire_dec(string Filename):mycapture(Filename,2)
+	fire_dec(shared_ptr<capture> mc):mycapture(mc)
 	{
 	}
 	void detect();
 	int faultdetect() const;
 private:
-	capture mycapture;
+	shared_ptr<capture> mycapture;
 	temporaldatam temporalctrl{20,1};
 	temporaldatam::fstruct f1;
 	temporaldatam::fstruct f2;

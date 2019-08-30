@@ -3,10 +3,10 @@
 void flash_dec::detect()
 {
 	temporalctrl.addf("area", f_num);
-	src = mycapture.getframe();
+	src = mycapture->getframe();
 	while (!src.empty())
 	{
-		src = mycapture.getframe();
+		src = mycapture->getframe();
 		suspiciousconf conf(1, 6, 50, 200, 0, 50);
 		s_contour=get_suspicious_area(src, conf);
 		temporalctrl.update(s_contour);
