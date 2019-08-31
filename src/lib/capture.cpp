@@ -19,15 +19,19 @@ Mat capture::getframe()
 {
 	if (capture_mode == 0)
 	{
-		string str;
-		getline(txtfile, str);
-		if (!str.empty())
-		{
-			cout << str << endl;
-			current_mat = imread(str);
-			return current_mat;
-		}
-		else
+        string str;
+        getline(txtfile, str);
+        if (!str.empty())
+        {
+            char c_str[str.size()];
+            int nf=0;
+            for(auto ptr=str.begin();ptr!=str.end()-1;ptr++)
+                c_str[nf++]=*ptr;
+            c_str[nf]='\0';
+            current_mat = imread(c_str);
+            return current_mat;
+        }
+        else
 			return Mat();
 	}
 	else if (capture_mode == 1)

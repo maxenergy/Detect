@@ -36,10 +36,4 @@ private:
 };
 
 
-//火焰特征计算函数
-vector<double> f_area(const vector<Point> &);				//面积
-vector<double> f_perimeter(const vector<Point> &);			//周长
-vector<double> f_circle(const vector<Point> &);				//似圆度
-vector<double> f_cofc(const vector<Point> &);				//边界变化量
-
 double culdis(const vector<double> &v1, const vector<double> &v2);  //计算两个dct向量之间的距离

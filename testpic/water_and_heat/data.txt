@@ -1,0 +1,9 @@
+/home/zxb/SRC_C/Detect/testpic/water_and_heat/FLIR2068.jpg
+/home/zxb/SRC_C/Detect/testpic/water_and_heat/FLIR2070.jpg
+/home/zxb/SRC_C/Detect/testpic/water_and_heat/FLIR2072.jpg
+/home/zxb/SRC_C/Detect/testpic/water_and_heat/FLIR2074.jpg
+/home/zxb/SRC_C/Detect/testpic/water_and_heat/FLIR2076.jpg
+/home/zxb/SRC_C/Detect/testpic/water_and_heat/FLIR2078.jpg
+/home/zxb/SRC_C/Detect/testpic/water_and_heat/FLIR2080.jpg
+/home/zxb/SRC_C/Detect/testpic/water_and_heat/FLIR2082.jpg
+/home/zxb/SRC_C/Detect/testpic/water_and_heat/FLIR2084.jpg

@@ -9,7 +9,7 @@ void water_seepage_dec::detect()
 	//temporalctrl.addf("circle", f_circle);
 	while (1)
 	{
-		src = mycapture->getframe();
+        src = mycapture->getframe();
 		if (src.empty())
 			break;
 		digitdata = Graytodigit(src, 31, 24);
@@ -174,25 +174,4 @@ int water_seepage_dec::faultdetect()
 	return result;
 }
 
-vector<double> f_area(const vector<Point> &c)
-{
-	vector<double> result;
-	result.push_back(contourArea(c, false));
-	return result;
-}
 
-vector<double> f_perimeter(const vector<Point> &c)
-{
-	vector<double> result;
-	result.push_back(arcLength(c, true));
-	return result;
-}
-
-vector<double> f_circle(const vector<Point> &c)
-{
-	vector<double> result;
-	double a = contourArea(c, false);
-	double p = arcLength(c, true);
-	result.push_back(4 * 3.14*a / (p*p));
-	return result;
-}

@@ -33,6 +33,3 @@ private:
 	temporaldatam::fstruct f1;
 };
 
-vector<double> f_area(const vector<Point> &);				//面积
-vector<double> f_perimeter(const vector<Point> &);			//周长
-vector<double> f_circle(const vector<Point> &);				//似圆度

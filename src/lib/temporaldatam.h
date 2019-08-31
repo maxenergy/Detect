@@ -171,3 +171,7 @@ private:
 	Point culkeyofc(const vector<Point> &p) const;							//计算一个闭合轮廓的key
 };
 
+vector<double> f_area(const vector<Point> &);				//面积
+vector<double> f_perimeter(const vector<Point> &);			//周长
+vector<double> f_circle(const vector<Point> &);				//似圆度
+vector<double> f_cofc(const vector<Point> &);				//边界变化量

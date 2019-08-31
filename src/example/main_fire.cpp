@@ -2,7 +2,7 @@
 
 int main()
 {
-	shared_ptr<capture> mc = make_shared<capture>("G:/SRC_C/Detect/testpic/»ðÑæ/FLIR2102.mp4", 2);
+    shared_ptr<capture> mc = make_shared<capture>("/home/zxb/SRC_C/Detect/testpic/fire/FLIR2102.mp4", 2);
 	fire_dec ob(mc);
 	ob.detect();
 	//cvWaitKey(0);
