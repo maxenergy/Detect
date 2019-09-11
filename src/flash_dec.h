@@ -22,7 +22,7 @@ public:
 	{
 
 	}
-	void detect();																//·µ»ØÖµ£º0Õı³££»1ÒÉËÆÉøË®
+	void detect();																//è¿”å›å€¼ï¼š0æ­£å¸¸ï¼›1ç–‘ä¼¼æ¸—æ°´
 	int faultdetect();
 
 private:
@@ -31,5 +31,5 @@ private:
 	temporaldatam::fstruct f1;
 };
 
-vector<double> f_num(const vector<Point> &);				//Ãæ»ı
+vector<double> f_num(const vector<Point> &);				//é¢ç§¯
 

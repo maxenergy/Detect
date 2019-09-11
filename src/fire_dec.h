@@ -36,4 +36,4 @@ private:
 };
 
 
-double culdis(const vector<double> &v1, const vector<double> &v2);  //¼ÆËãÁ½¸ödctÏòÁ¿Ö®¼äµÄ¾àÀë
+double culdis(const vector<double> &v1, const vector<double> &v2);  //è®¡ç®—ä¸¤ä¸ªdctå‘é‡ä¹‹é—´çš„è·ç¦»

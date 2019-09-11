@@ -1,12 +1,12 @@
 #include"temporaldatam.h"
 
 /*
-		[[[[[[[		¡û	pfirst¶ÓÊ×£¨Èë£©
+		[[[[[[[		â†	pfirsté˜Ÿé¦–ï¼ˆå…¥ï¼‰
 		[[[[[[[
 		[[[[[[[
 		[[[[[[[
 		[[[[[[[
-		[[[[[[[		¡û	pend¶ÓÎ²£¨³ö£©
+		[[[[[[[		â†	pendé˜Ÿå°¾ï¼ˆå‡ºï¼‰
 */
 
 template<class T>
@@ -110,7 +110,7 @@ void temporaldatam::push_back(const insertdata &data)
 
 void temporaldatam::pop(int timeid,int quelength)
 {
-	int bridge = 0;							//Òªpop³öµÄ±ß½çÖµ
+	int bridge = 0;							//è¦popå‡ºçš„è¾¹ç•Œå€¼
 	if (timeid < quelength)
 		bridge = timeid + 1000 - quelength;
 	else
@@ -236,7 +236,7 @@ temporaldatam::insertdata temporaldatam::inputdata(const vector<vector<Point>> &
 		else
 		{
 			addq(element(idtime, i));
-			cout << "Ôö¼ÓÁËÒ»¸öĞÂÔªËØ£¬±êÊ¶Îª£º" << pcen << endl;
+			cout << "å¢åŠ äº†ä¸€ä¸ªæ–°å…ƒç´ ï¼Œæ ‡è¯†ä¸ºï¼š" << pcen << endl;
 		}
 	}
 	return data;
@@ -248,7 +248,7 @@ void temporaldatam::update(const vector<vector<Point>> &inc)
 	if  (nhz == 0)
 	{
 		insertdata data = inputdata(inc);
-		cout << "queµÄsize=" << que.size() << "  dataµÄsize=" << data.size() << endl;
+		cout << "queçš„size=" << que.size() << "  dataçš„size=" << data.size() << endl;
 		push_back(data);
 		pop(idtime, qlength);
 		for (int n = 0;n < que.size();n++)
@@ -264,7 +264,7 @@ void temporaldatam::update(const vector<vector<Point>> &inc)
 				if (m != n)
 					if (isnear(que[n], que[m]))
 					{
-						cout << "·¢ÉúºÏ²¢" << endl;
+						cout << "å‘ç”Ÿåˆå¹¶" << endl;
 						m--;
 						if (n > m) n--;
 					}
@@ -321,7 +321,7 @@ vector<double> f_cofc(const vector<Point> &c)
         X.push_back(i.x);
         Y.push_back(i.y);
     }
-    if (c.size() % 2 != 0) //DCT½öÖ§³ÖÅ¼Êı¸öÊı¾İ
+    if (c.size() % 2 != 0) //DCTä»…æ”¯æŒå¶æ•°ä¸ªæ•°æ®
     {
         X.push_back(X.front());
         Y.push_back(Y.front());

@@ -1,5 +1,5 @@
 #pragma once
-#define Thofisnear 16		//ÅĞ¶ÏÁ½¸ökeyÁÙ½üµÄãĞÖµ
+#define Thofisnear 16		//åˆ¤æ–­ä¸¤ä¸ªkeyä¸´è¿‘çš„é˜ˆå€¼
 
 
 #include <iostream>
@@ -21,13 +21,13 @@ using namespace cv;
 
 struct element
 {
-	element(int it, const vector<Point> &iv) :timeid(it), value(iv), plast(NULL)		//ÔªËØ½Úµã³õÊ¼»¯
+	element(int it, const vector<Point> &iv) :timeid(it), value(iv), plast(NULL)		//å…ƒç´ èŠ‚ç‚¹åˆå§‹åŒ–
 	{}
 	element(const element &e) :timeid(e.timeid), value(e.value), plast(NULL)
 	{}
-	int timeid;						//Ê±¼ä±êÊ¶
-	vector<Point> value;			//Ò»¸ö±ÕºÏÂÖÀª
-	shared_ptr<element> plast;		//Ö¸ÏòÉÏÒ»¸öÔªËØµÄÖ¸Õë
+	int timeid;						//æ—¶é—´æ ‡è¯†
+	vector<Point> value;			//ä¸€ä¸ªé—­åˆè½®å»“
+	shared_ptr<element> plast;		//æŒ‡å‘ä¸Šä¸€ä¸ªå…ƒç´ çš„æŒ‡é’ˆ
 };
 
 template<class T>
@@ -39,10 +39,10 @@ private:
 	T flag;
 
 public:
-	qofe():pfirst(nullptr),pend(nullptr)		//Ä¬ÈÏ¹¹Ôìº¯Êı
+	qofe():pfirst(nullptr),pend(nullptr)		//é»˜è®¤æ„é€ å‡½æ•°
 	{}
 
-	//ÉèÖÃÓë·µ»ØÎ»ÖÃ±êÖ¾
+	//è®¾ç½®ä¸è¿”å›ä½ç½®æ ‡å¿—
 	void setflag(T i)
 	{
 		flag = i;
@@ -52,13 +52,13 @@ public:
 		return flag;
 	}
 	
-	//·µ»Ø¶ÓÎ²ÔªËØµÄÖ¸Õë
+	//è¿”å›é˜Ÿå°¾å…ƒç´ çš„æŒ‡é’ˆ
 	shared_ptr<element> getend()	const		
 	{
 		return pend;
 	}
 
-	//ÔÚ¶ÓÎ²²åÈëÒ»¸öÔªËØ
+	//åœ¨é˜Ÿå°¾æ’å…¥ä¸€ä¸ªå…ƒç´ 
 	void push_back(int timeid,const vector<Point> &elem)			
 	{
 		if (pfirst == nullptr)
@@ -73,7 +73,7 @@ public:
 		pfirst->plast = nullptr;
 	}
 
-	//ÖØÔØ£¬ÔÚ¶ÓÎ²²åÈëÒ»¸öÔªËØ
+	//é‡è½½ï¼Œåœ¨é˜Ÿå°¾æ’å…¥ä¸€ä¸ªå…ƒç´ 
 	void push_back(const element &e)					
 	{
 		if (pfirst == nullptr)
@@ -88,7 +88,7 @@ public:
 		pfirst->plast = nullptr;
 	}
 
-	//µ¯³ö¶ÓÊ×µÄÒ»¸öÔªËØ
+	//å¼¹å‡ºé˜Ÿé¦–çš„ä¸€ä¸ªå…ƒç´ 
 	void pop()
 	{
 		if (pend != nullptr)
@@ -99,11 +99,11 @@ public:
 		}
 	}
 
-	void insert(int,const vector<Point> &);		//°´Ê±¼äË³Ğò²åÈëÒ»¸öÔªËØ
-	void insert(const qofe &);					//ÔÚ¶ÓÁĞÖĞ²åÈëÁíÒ»¸ö¶ÓÁĞ
-	int numofe()	const;						//·µ»Ø¶ÓÁĞÖĞÓĞĞ§ÔªËØµÄ¸öÊı
-	bool isempty()	const;						//·µ»Ø¶ÓÁĞÊÇ·ñÎª¿Õ
-	vector<vector<Point>> v_return() const;		//·µ»Ø¶ÓÁĞÀïµÄÂÖÀª(²»º¬timeid)
+	void insert(int,const vector<Point> &);		//æŒ‰æ—¶é—´é¡ºåºæ’å…¥ä¸€ä¸ªå…ƒç´ 
+	void insert(const qofe &);					//åœ¨é˜Ÿåˆ—ä¸­æ’å…¥å¦ä¸€ä¸ªé˜Ÿåˆ—
+	int numofe()	const;						//è¿”å›é˜Ÿåˆ—ä¸­æœ‰æ•ˆå…ƒç´ çš„ä¸ªæ•°
+	bool isempty()	const;						//è¿”å›é˜Ÿåˆ—æ˜¯å¦ä¸ºç©º
+	vector<vector<Point>> v_return() const;		//è¿”å›é˜Ÿåˆ—é‡Œçš„è½®å»“(ä¸å«timeid)
 };
 
 
@@ -127,26 +127,26 @@ private:
 class temporaldatam
 {
 public:
-	temporaldatam(int bufferlength = 20, int hz = 1) :que(), featurectrl(), idtime(0), qlength(bufferlength), Hz(hz)	//³õÊ¼»¯º¯Êı
+	temporaldatam(int bufferlength = 20, int hz = 1) :que(), featurectrl(), idtime(0), qlength(bufferlength), Hz(hz)	//åˆå§‹åŒ–å‡½æ•°
 	{}
 
 	typedef vector<vector<pair<int, vector<double>>>> fstruct;
 	//##################
-	//	½Ó¿Ú
+	//	æ¥å£
 	//##################
 
-	//ÌØÕ÷¹ÜÀí
-	bool addf(string name, vector<double>(*func)(const vector<Point> &));				//Ìí¼ÓÃû×ÖÎªnameµÄÌØÕ÷
-	bool delf(string);																	//É¾³ıÃû×ÖÎªnameµÄÌØÕ÷
-	vector<vector<pair<int, vector<double>>>> return_f(int flag, string name = NULL);	//·µ»ØÃû×ÖÎªnameµÄÌØÕ÷Êı¾İ
+	//ç‰¹å¾ç®¡ç†
+	bool addf(string name, vector<double>(*func)(const vector<Point> &));				//æ·»åŠ åå­—ä¸ºnameçš„ç‰¹å¾
+	bool delf(string);																	//åˆ é™¤åå­—ä¸ºnameçš„ç‰¹å¾
+	vector<vector<pair<int, vector<double>>>> return_f(int flag, string name = NULL);	//è¿”å›åå­—ä¸ºnameçš„ç‰¹å¾æ•°æ®
 
-	//¸üĞÂÊ±Ğò¹ÜÀíÀà
-	void update(const vector<vector<Point>> &);											//ÊäÈë¿ÉÒÉÂÖÀª£¬¸üĞÂ×´Ì¬
-	vector<vector<Point>> v_return(int n) const;												//·µ»ØµÚn¸öÂÖÀª¼¯ºÏ
+	//æ›´æ–°æ—¶åºç®¡ç†ç±»
+	void update(const vector<vector<Point>> &);											//è¾“å…¥å¯ç–‘è½®å»“ï¼Œæ›´æ–°çŠ¶æ€
+	vector<vector<Point>> v_return(int n) const;												//è¿”å›ç¬¬nä¸ªè½®å»“é›†åˆ
 
 private:
-	int qlength;															//ÂÖÀªĞòÁĞµÄ´°¿Ú³¤¶È
-	int Hz;																	//²ÉÑùÆµÂÊ£ºHzÕÅÍ¼Æ¬È¡Ò»ÕÅ
+	int qlength;															//è½®å»“åºåˆ—çš„çª—å£é•¿åº¦
+	int Hz;																	//é‡‡æ ·é¢‘ç‡ï¼šHzå¼ å›¾ç‰‡å–ä¸€å¼ 
 	int nhz = 0;
 	vector<qofe<Point>> que;
 	map<string, feature> featurectrl;
@@ -154,24 +154,24 @@ private:
 	typedef vector<pair<Point, vector<element>>> insertdata;
 	int idtime;
 
-	//¶ÓÁĞ¹ÜÀí
-	void addq(element vque);												//Ôö¼ÓÒ»¸ö¶ÓÁĞ
-	bool deleteq(Point keyid);												//É¾³ıkeyÎªkeyidµÄ¶ÓÁĞ,É¾³ı³É¹¦·µ»Øtrue£¬Ã»ÓĞkeyid·µ»Øfalse
-	void push_back(const insertdata &);										//ÔÚËùÓĞ¶ÓÎ²Ñ¹ÈëÒ»¸öĞòÁĞ
-	void pop(int, int);														//ÔÚËùÓĞ¶ÓÊ×µ¯³öÒ»¸öĞòÁĞ
-	void mergeq(qofe<Point> &output, qofe<Point> &input);					//ÈÚºÏÁ½¸ö¶ÓÁĞ£¬output=output+input
-	bool isnear(qofe<Point> &output, qofe<Point> &input);					//ÅĞ¶ÏÁ½¸ö¶ÓÁĞµÄkeyÊÇ·ñ×ã¹»½ü£¬Èç¹û×ã¹»½üÔòÈÚºÏ
+	//é˜Ÿåˆ—ç®¡ç†
+	void addq(element vque);												//å¢åŠ ä¸€ä¸ªé˜Ÿåˆ—
+	bool deleteq(Point keyid);												//åˆ é™¤keyä¸ºkeyidçš„é˜Ÿåˆ—,åˆ é™¤æˆåŠŸè¿”å›trueï¼Œæ²¡æœ‰keyidè¿”å›false
+	void push_back(const insertdata &);										//åœ¨æ‰€æœ‰é˜Ÿå°¾å‹å…¥ä¸€ä¸ªåºåˆ—
+	void pop(int, int);														//åœ¨æ‰€æœ‰é˜Ÿé¦–å¼¹å‡ºä¸€ä¸ªåºåˆ—
+	void mergeq(qofe<Point> &output, qofe<Point> &input);					//èåˆä¸¤ä¸ªé˜Ÿåˆ—ï¼Œoutput=output+input
+	bool isnear(qofe<Point> &output, qofe<Point> &input);					//åˆ¤æ–­ä¸¤ä¸ªé˜Ÿåˆ—çš„keyæ˜¯å¦è¶³å¤Ÿè¿‘ï¼Œå¦‚æœè¶³å¤Ÿè¿‘åˆ™èåˆ
 
-	//ÌØÕ÷¹ÜÀí
-	void updatef();															//¸üĞÂËùÓĞÌØÕ÷
+	//ç‰¹å¾ç®¡ç†
+	void updatef();															//æ›´æ–°æ‰€æœ‰ç‰¹å¾
 
-	//¸üĞÂÊ±Ğò¹ÜÀíÀà
-	insertdata inputdata(const vector<vector<Point>> &inc);					//¶ÔÊäÈëµÄ¿ÉÒÉÂÖÀª¼¯ºÏÖĞµÄÃ¿Ò»¸öÔªËØ½øĞĞ²Ù×÷¹æ»®
-	double disofp(Point pa, Point pb);										//·µ»ØÁ½¸ökeyÖ®¼äµÄ¾àÀë
-	Point culkeyofc(const vector<Point> &p) const;							//¼ÆËãÒ»¸ö±ÕºÏÂÖÀªµÄkey
+	//æ›´æ–°æ—¶åºç®¡ç†ç±»
+	insertdata inputdata(const vector<vector<Point>> &inc);					//å¯¹è¾“å…¥çš„å¯ç–‘è½®å»“é›†åˆä¸­çš„æ¯ä¸€ä¸ªå…ƒç´ è¿›è¡Œæ“ä½œè§„åˆ’
+	double disofp(Point pa, Point pb);										//è¿”å›ä¸¤ä¸ªkeyä¹‹é—´çš„è·ç¦»
+	Point culkeyofc(const vector<Point> &p) const;							//è®¡ç®—ä¸€ä¸ªé—­åˆè½®å»“çš„key
 };
 
-vector<double> f_area(const vector<Point> &);				//Ãæ»ı
-vector<double> f_perimeter(const vector<Point> &);			//ÖÜ³¤
-vector<double> f_circle(const vector<Point> &);				//ËÆÔ²¶È
-vector<double> f_cofc(const vector<Point> &);				//±ß½ç±ä»¯Á¿
+vector<double> f_area(const vector<Point> &);				//é¢ç§¯
+vector<double> f_perimeter(const vector<Point> &);			//å‘¨é•¿
+vector<double> f_circle(const vector<Point> &);				//ä¼¼åœ†åº¦
+vector<double> f_cofc(const vector<Point> &);				//è¾¹ç•Œå˜åŒ–é‡

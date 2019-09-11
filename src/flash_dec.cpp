@@ -13,7 +13,7 @@ void flash_dec::detect()
 
 		f1 = temporalctrl.return_f(0, "area");
 		cout << "####################################################" << endl;
-		cout << "ÌØÕ÷area£º" << endl;
+		cout << "ç‰¹å¾areaï¼š" << endl;
 		for (auto i : f1)
 		{
 			for (auto i2 : i)
@@ -25,7 +25,7 @@ void flash_dec::detect()
 		cout << "####################################################" << endl;
 		//imshow("src", src);
 		failure_alarm_flag = faultdetect();
-		cout << "Éè±¸×´Ì¬ÀàÐÍÎª£º" << failure_alarm_flag << endl << endl;
+		cout << "è®¾å¤‡çŠ¶æ€ç±»åž‹ä¸ºï¼š" << failure_alarm_flag << endl << endl;
 		cvWaitKey(20);
 	}
 
@@ -40,7 +40,7 @@ int flash_dec::faultdetect()
 		int sum = 0;
 		int lasttimeid = -2;
 		double last = 0;
-		for (auto &i : f1[n])					//¸ù¾ÝÃæ»ý±ä»¯µÄÇé¿öÈ·¶¨ÊÇ·ñÊÇÉøË®ÇøÓò£¬¿ÉÄÜ»¹ÐèÒªµ÷Õû
+		for (auto &i : f1[n])					//æ ¹æ®é¢ç§¯å˜åŒ–çš„æƒ…å†µç¡®å®šæ˜¯å¦æ˜¯æ¸—æ°´åŒºåŸŸï¼Œå¯èƒ½è¿˜éœ€è¦è°ƒæ•´
 		{
 			//if (i.first != lasttimeid && (i.second[0] - last > 100 || i.second[0] - last < -100))
 				++sum;

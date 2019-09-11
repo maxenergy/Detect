@@ -1,7 +1,6 @@
 #include"water_seepage_dec.h"
 
-
-//²âÊÔ½Ó¿Ú£¬²âÊÔÖ÷ÒªÁ÷³Ì¡£
+//æµ‹è¯•æ¥å£ï¼Œæµ‹è¯•ä¸»è¦æµç¨‹ã€‚
 void water_seepage_dec::detect()
 {
 	temporalctrl.addf("area", f_area);
@@ -23,7 +22,7 @@ void water_seepage_dec::detect()
 
 		f1 = temporalctrl.return_f(0, "area");
 		cout << "####################################################" << endl;
-		cout << "ÌØÕ÷area£º" << endl;
+		cout << "ç‰¹å¾areaï¼š" << endl;
 		for (auto i : f1)
 		{
 			for (auto i2 : i)
@@ -36,12 +35,12 @@ void water_seepage_dec::detect()
 
 		failure_alarm_flag = faultdetect();
 
-		cout << "Éè±¸×´Ì¬ÀàĞÍÎª£º" << failure_alarm_flag << endl << endl;
+		cout << "è®¾å¤‡çŠ¶æ€ç±»å‹ä¸ºï¼š" << failure_alarm_flag << endl << endl;
 
 		//cvWaitKey(0);
 	}
 }
-//¶Ô¿ÉÒÉÇøÓò½øĞĞÉ¸Ñ¡ÅĞ¶Ï
+//å¯¹å¯ç–‘åŒºåŸŸè¿›è¡Œç­›é€‰åˆ¤æ–­
 void water_seepage_dec::dec_w(double **inputData, vector<vector<Point>> &suspicious_contour)
 {
 	vector<vector<Point>> hull(suspicious_contour.size());
@@ -89,7 +88,7 @@ void water_seepage_dec::dec_w(double **inputData, vector<vector<Point>> &suspici
 		{
 			for (int col = 0; col < src.cols; col++)
 			{
-				// ÊÇ·ñ·µ»Ø¾àÀëÖµ£¬Èç¹ûÊÇfalse£¬1±íÊ¾ÔÚÄÚÃæ£¬0±íÊ¾ÔÚ±ß½çÉÏ£¬-1±íÊ¾ÔÚÍâ²¿£¬true·µ»ØÊµ¼Ê¾àÀë,·µ»ØÊı¾İÊÇdoubleÀàĞÍ
+				// æ˜¯å¦è¿”å›è·ç¦»å€¼ï¼Œå¦‚æœæ˜¯falseï¼Œ1è¡¨ç¤ºåœ¨å†…é¢ï¼Œ0è¡¨ç¤ºåœ¨è¾¹ç•Œä¸Šï¼Œ-1è¡¨ç¤ºåœ¨å¤–éƒ¨ï¼Œtrueè¿”å›å®é™…è·ç¦»,è¿”å›æ•°æ®æ˜¯doubleç±»å‹
 				Eptr[row][col] = pointPolygonTest(suspicious_contour[i], Point2f(col, row), false);
 				Eptri[row][col] = pointPolygonTest(hull[i], Point2f(col, row), false);
 				Eptro[row][col] = pointPolygonTest(hullo[i], Point2f(col, row), false);
@@ -136,7 +135,7 @@ void water_seepage_dec::dec_w(double **inputData, vector<vector<Point>> &suspici
 	delete[] Eptro;
 	delete[] Eptri;
 }
-//·µ»ØÖµ£º0Õı³££»1ÒÉËÆÉøË®
+//è¿”å›å€¼ï¼š0æ­£å¸¸ï¼›1ç–‘ä¼¼æ¸—æ°´
 int water_seepage_dec::faultdetect()
 {
 	int result = 0;
@@ -146,7 +145,7 @@ int water_seepage_dec::faultdetect()
 		int sum = 0;
 		int lasttimeid = -2;
 		double last = 0;
-		for (auto &i : f1[n])					//¸ù¾İÃæ»ı±ä»¯µÄÇé¿öÈ·¶¨ÊÇ·ñÊÇÉøË®ÇøÓò£¬¿ÉÄÜ»¹ĞèÒªµ÷Õû
+		for (auto &i : f1[n])					//æ ¹æ®é¢ç§¯å˜åŒ–çš„æƒ…å†µç¡®å®šæ˜¯å¦æ˜¯æ¸—æ°´åŒºåŸŸï¼Œå¯èƒ½è¿˜éœ€è¦è°ƒæ•´
 		{
 			if (i.first != lasttimeid && (i.second[0] - last > 100 || i.second[0] - last < -100))
 				++sum;

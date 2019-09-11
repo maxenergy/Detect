@@ -23,7 +23,7 @@ void fire_dec::detect()
 		f4 = temporalctrl.return_f(0, "cofc");
 
 		//cout << "####################################################" << endl;
-		//cout << "ÌØÕ÷:"<<"cofc" << endl;
+		//cout << "ç‰¹å¾:"<<"cofc" << endl;
 		//for (auto i : f3)
 		//{
 		//	for (auto i2 : i)
@@ -35,7 +35,7 @@ void fire_dec::detect()
 		//cout << "####################################################" << endl;
 
 		failure_alarm_flag = faultdetect();
-		cout << "Éè±¸×´Ì¬ÀàĞÍÎª£º" << failure_alarm_flag << endl << endl;
+		cout << "è®¾å¤‡çŠ¶æ€ç±»å‹ä¸ºï¼š" << failure_alarm_flag << endl << endl;
 
 		cvWaitKey(20);
 		src = mycapture->getframe();
@@ -51,7 +51,7 @@ int fire_dec::faultdetect() const
 		int sum[4] = { 0 };
 		int lasttimeid[3] = { -2 };
 		double last[3] = { 0 };
-		for (auto &i : f1[n])					//¸ù¾İÃæ»ı±ä»¯µÄÇé¿öÈ·¶¨ÊÇ·ñÊÇÉøË®ÇøÓò£¬¿ÉÄÜ»¹ĞèÒªµ÷Õû
+		for (auto &i : f1[n])					//æ ¹æ®é¢ç§¯å˜åŒ–çš„æƒ…å†µç¡®å®šæ˜¯å¦æ˜¯æ¸—æ°´åŒºåŸŸï¼Œå¯èƒ½è¿˜éœ€è¦è°ƒæ•´
 		{
 			double th = 30;
 			if (i.first != lasttimeid[0] && (i.second[0] - last[0] > th || i.second[0] - last[0] < -th))
@@ -59,7 +59,7 @@ int fire_dec::faultdetect() const
 			lasttimeid[0] = i.first;
 			last[0] = i.second[0];
 		}
-		for (auto &i : f2[n])					//¸ù¾İÖÜ³¤±ä»¯µÄÇé¿öÈ·¶¨ÊÇ·ñÊÇÉøË®ÇøÓò£¬¿ÉÄÜ»¹ĞèÒªµ÷Õû
+		for (auto &i : f2[n])					//æ ¹æ®å‘¨é•¿å˜åŒ–çš„æƒ…å†µç¡®å®šæ˜¯å¦æ˜¯æ¸—æ°´åŒºåŸŸï¼Œå¯èƒ½è¿˜éœ€è¦è°ƒæ•´
 		{
 			double th = 8;
 			if (i.first != lasttimeid[1] && (i.second[0] - last[1] > th || i.second[0] - last[1] < -th))
@@ -67,7 +67,7 @@ int fire_dec::faultdetect() const
 			lasttimeid[1] = i.first;
 			last[1] = i.second[0];
 		}
-		for (auto &i : f3[n])					//¸ù¾İËÆÔ²¶È±ä»¯µÄÇé¿öÈ·¶¨ÊÇ·ñÊÇÉøË®ÇøÓò£¬¿ÉÄÜ»¹ĞèÒªµ÷Õû
+		for (auto &i : f3[n])					//æ ¹æ®ä¼¼åœ†åº¦å˜åŒ–çš„æƒ…å†µç¡®å®šæ˜¯å¦æ˜¯æ¸—æ°´åŒºåŸŸï¼Œå¯èƒ½è¿˜éœ€è¦è°ƒæ•´
 		{
 			double th = 0.02;
 			if (i.first != lasttimeid[2] && (i.second[0] - last[2] > th || i.second[0] - last[2] < -th))
@@ -90,7 +90,7 @@ int fire_dec::faultdetect() const
 
 
 		int th = 3;
-		if (sum[0] > th && sum[1] > th && sum[2] > th && sum[3] > th )			//·ûºÏÌõ¼ş£¬ÅĞ¶Ï·¢Éú¹ÊÕÏ£¬½«×îºóÒ»¸öÂÖÀª»æÖÆ³öÀ´¡£
+		if (sum[0] > th && sum[1] > th && sum[2] > th && sum[3] > th )			//ç¬¦åˆæ¡ä»¶ï¼Œåˆ¤æ–­å‘ç”Ÿæ•…éšœï¼Œå°†æœ€åä¸€ä¸ªè½®å»“ç»˜åˆ¶å‡ºæ¥ã€‚
 		{
 			vector<vector<Point>> pall = temporalctrl.v_return(n);
 			vector<vector<Point>>::const_iterator vstep;

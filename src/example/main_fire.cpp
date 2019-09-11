@@ -7,22 +7,22 @@ int main()
 	ob.detect();
 	//cvWaitKey(0);
 
-	//Mat srcImage = imread("G:\\ÎÄµµ\\ÑĞ¾¿Éú±ÏÉè\\Ôº×Ô³ïÏîÄ¿\\²âÊÔÍ¼Æ¬\\1ÎÂ¶ÈÓëÍ¼ÏñÖ®¼äµÄ×ª»¯\\FLIR2026.jpg");
+	//Mat srcImage = imread("G:\\æ–‡æ¡£\\ç ”ç©¶ç”Ÿæ¯•è®¾\\é™¢è‡ªç­¹é¡¹ç›®\\æµ‹è¯•å›¾ç‰‡\\1æ¸©åº¦ä¸å›¾åƒä¹‹é—´çš„è½¬åŒ–\\FLIR2026.jpg");
 	//cvtColor(srcImage, srcImage, CV_BGR2GRAY);
-	//imshow("Ô­Í¼Ïñ", srcImage);
+	//imshow("åŸå›¾åƒ", srcImage);
 
 
-	////¶¨ÒåDCTÏµÊıµÄÈı¸öÍ¨µÀ
+	////å®šä¹‰DCTç³»æ•°çš„ä¸‰ä¸ªé€šé“
 	//Mat DCT(srcImage.size(), CV_64FC1);
 	//
-	////½øĞĞDCT±ä»»
+	////è¿›è¡ŒDCTå˜æ¢
 	//dct(Mat_<double>(srcImage), DCT);
 	//
 
 	//DCT = Mat_<uchar>(DCT);
 	//
 
-	//imshow("DCTÍ¼Ïñ", DCT);
+	//imshow("DCTå›¾åƒ", DCT);
 
 	waitKey();
 	return 0;

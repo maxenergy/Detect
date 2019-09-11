@@ -22,11 +22,11 @@ class heat_dec:public basedec
 	struct Tconf
 	{
 		Point position;
-		double tdev;								//Éè±¸¼ì²âµãµÄÎÂ¶È
-		double tother;								//Í¬»·¾³Éè±¸²Î¿¼ÎÂ¶È
-		double temperature_rise;					//ÎÂÉı£º±»²âÉè±¸±íÃæÎÂ¶ÈºÍ»·¾³ÎÂ¶È²ÎÕÕÌå±íÃæÎÂ¶ÈÖ®²î¡£
-		double temperature_difference;				//ÎÂ²î£º²»Í¬±»²âÉè±¸»òÍ¬Ò»±»²âÉè±¸²»Í¬²¿Î»Ö®¼äµÄÎÂ¶È²î¡£
-		double relative_temperature_difference;		//Ïà¶ÔÎÂ²î£ºÁ½¸ö¶ÔÓ¦²âµãÖ®¼äµÄÎÂ²îÓëÆäÖĞ½ÏÈÈµãµÄÎÂÉıÖ®±ÈµÄ°Ù·ÖÊı¡£
+		double tdev;								//è®¾å¤‡æ£€æµ‹ç‚¹çš„æ¸©åº¦
+		double tother;								//åŒç¯å¢ƒè®¾å¤‡å‚è€ƒæ¸©åº¦
+		double temperature_rise;					//æ¸©å‡ï¼šè¢«æµ‹è®¾å¤‡è¡¨é¢æ¸©åº¦å’Œç¯å¢ƒæ¸©åº¦å‚ç…§ä½“è¡¨é¢æ¸©åº¦ä¹‹å·®ã€‚
+		double temperature_difference;				//æ¸©å·®ï¼šä¸åŒè¢«æµ‹è®¾å¤‡æˆ–åŒä¸€è¢«æµ‹è®¾å¤‡ä¸åŒéƒ¨ä½ä¹‹é—´çš„æ¸©åº¦å·®ã€‚
+		double relative_temperature_difference;		//ç›¸å¯¹æ¸©å·®ï¼šä¸¤ä¸ªå¯¹åº”æµ‹ç‚¹ä¹‹é—´çš„æ¸©å·®ä¸å…¶ä¸­è¾ƒçƒ­ç‚¹çš„æ¸©å‡ä¹‹æ¯”çš„ç™¾åˆ†æ•°ã€‚
 	};
 public:
 	heat_dec(shared_ptr<capture> mc) : mycapture(mc)
@@ -34,26 +34,26 @@ public:
 		src = mycapture->getframe();
 		imshow("src", src);
 	}
-	void detect();								//²âÊÔ½Ó¿Ú£¬²âÊÔÖ÷ÒªÁ÷³Ì¡£
+	void detect();								//æµ‹è¯•æ¥å£ï¼Œæµ‹è¯•ä¸»è¦æµç¨‹ã€‚
 
-	//Ö÷ÒªÁ÷³Ì·½·¨
-	void culate(double **inputData,const vector<vector<Point>> &dev_contour);	//¼ÆËãÉè±¸µÄÎÂ¶ÈÌØÕ÷Öµ¡£
-	int faultdetect() const;											//·µ»ØÖµ£º0Õı³££»1Ò»°ãÈ±Ïİ£»2ÑÏÖØÈ±Ïİ£»3Î£»úÈ±Ïİ
+	//ä¸»è¦æµç¨‹æ–¹æ³•
+	void culate(double **inputData,const vector<vector<Point>> &dev_contour);	//è®¡ç®—è®¾å¤‡çš„æ¸©åº¦ç‰¹å¾å€¼ã€‚
+	int faultdetect() const;											//è¿”å›å€¼ï¼š0æ­£å¸¸ï¼›1ä¸€èˆ¬ç¼ºé™·ï¼›2ä¸¥é‡ç¼ºé™·ï¼›3å±æœºç¼ºé™·
 
 private:
 	shared_ptr<capture> mycapture;
 
-	//¾¯±¨ãĞÖµÒÔ¼°±êÖ¾£¬ÈıÔªÊı×é´ú±íÈıÖÖ¼¶±ğµÄ¹ÊÕÏ¡£
-	vector<pair<double, double>> tdev_range[3];			//Éè±¸ÎÂ¶ÈµÄ¾¯±¨·¶Î§
-	vector<pair<double, double>> trise_range[3];		//ÎÂÉıµÄ¾¯±¨·¶Î§
-	vector<pair<double, double>> tdifference_range[3];	//ÎÂ²îµÄ¾¯±¨·¶Î§
-	vector<pair<double, double>> trd_range[3];			//Ïà¶ÔÎÂ²îµÄ¾¯±¨·¶Î§
+	//è­¦æŠ¥é˜ˆå€¼ä»¥åŠæ ‡å¿—ï¼Œä¸‰å…ƒæ•°ç»„ä»£è¡¨ä¸‰ç§çº§åˆ«çš„æ•…éšœã€‚
+	vector<pair<double, double>> tdev_range[3];			//è®¾å¤‡æ¸©åº¦çš„è­¦æŠ¥èŒƒå›´
+	vector<pair<double, double>> trise_range[3];		//æ¸©å‡çš„è­¦æŠ¥èŒƒå›´
+	vector<pair<double, double>> tdifference_range[3];	//æ¸©å·®çš„è­¦æŠ¥èŒƒå›´
+	vector<pair<double, double>> trd_range[3];			//ç›¸å¯¹æ¸©å·®çš„è­¦æŠ¥èŒƒå›´
 
 	double tenv;
-	vector<Tconf> tconf;							//Éè±¸µÄºìÍâÊı¾İ
+	vector<Tconf> tconf;							//è®¾å¤‡çš„çº¢å¤–æ•°æ®
 
-	//¸¨ÖúĞÍ±äÁ¿ºÍº¯Êı
-	void readxml(string filename);				//¶ÁÈ¡ÅäÖÃÎÄ¼ş£¬µ¼Èë¾¯±¨ãĞÖµ
+	//è¾…åŠ©å‹å˜é‡å’Œå‡½æ•°
+	void readxml(string filename);				//è¯»å–é…ç½®æ–‡ä»¶ï¼Œå¯¼å…¥è­¦æŠ¥é˜ˆå€¼
 
 };
 

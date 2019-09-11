@@ -14,8 +14,6 @@
 using namespace cv;
 using namespace std;
 
-
-
 class water_seepage_dec:public basedec
 {
 public:
@@ -23,8 +21,8 @@ public:
 	{
 
 	}
-	void detect();																//·µ»ØÖµ£º0Õı³££»1ÒÉËÆÉøË®
-	void dec_w(double **inputData, vector<vector<Point>> &suspicious_contour);	//¶Ô¿ÉÒÉÇøÓò½øĞĞÉ¸Ñ¡ÅĞ¶Ï
+	void detect();																//è¿”å›å€¼ï¼š0æ­£å¸¸ï¼›1ç–‘ä¼¼æ¸—æ°´
+	void dec_w(double **inputData, vector<vector<Point>> &suspicious_contour);	//å¯¹å¯ç–‘åŒºåŸŸè¿›è¡Œç­›é€‰åˆ¤æ–­
 	int faultdetect();
 
 private:

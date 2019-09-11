@@ -8,13 +8,18 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include "HCNetSDK.h"
+#include "LinuxPlayM4.h"
+#include "IUlirNetDevSDK.h"
+#include "TempAlgSDK.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-typedef unsigned long DWORD;
+//typedef unsigned long DWORD;
 typedef unsigned char BYTE;
+typedef unsigned char byte;
 
 using namespace std;
 using namespace cv;
@@ -30,12 +35,12 @@ struct suspiciousconf
 		th = t;
 		minnum = minn;
 	}
-	int dande;				//1£º¸¯Ê´ 2ÅòÕÍ 3¸¯Ê´+ÅòÕÍ
-	int dandesize;			//ºË´óĞ¡
-	int contrast_min;		//Èñ»¯min
-	int contrast_max;		//Èñ»¯max
-	int th;					//0´óÂÉ·¨ n¶şÖµ»¯ãĞÖµ
-	int minnum;				//ÂÖÀªµãÊı×îĞ¡ãĞÖµ
+	int dande;				//1ï¼šè…èš€ 2è†¨èƒ€ 3è…èš€+è†¨èƒ€
+	int dandesize;			//æ ¸å¤§å°
+	int contrast_min;		//é”åŒ–min
+	int contrast_max;		//é”åŒ–max
+	int th;					//0å¤§å¾‹æ³• näºŒå€¼åŒ–é˜ˆå€¼
+	int minnum;				//è½®å»“ç‚¹æ•°æœ€å°é˜ˆå€¼
 };
 
 class capture
@@ -44,33 +49,32 @@ public:
 	Mat srcrgb;
 	Mat srcir;
 	Mat srcuv;
-	struct struct_tp
-	{
-		unsigned char *m_pImageBuffer;
-		DWORD m_ImageBufferSize;
-		BYTE *m_pData;
-		DWORD m_dwDataSize;
-		
-	}srctp;
+    BYTE * tmdata ;
+    unsigned long tmdata_size ;
 
-	//³õÊ¼»¯
+	//åˆå§‹åŒ–
 	void SDK_Init();
-	//µÇÂ¼Éè±¸
-	void SDK_Connect();
-	//¿ªÆôÊÓÆµÁ÷ÊµÊ±¸üĞÂ
-	void Vedio_Stream_Set();
-	//¸üĞÂµ±Ç°Ö¡
+	//ç™»å½•è®¾å¤‡
+    bool SDK_Connect();
+	//å¼€å¯è§†é¢‘æµå®æ—¶æ›´æ–°
+    bool Vedio_Stream_Set();
+	//æ›´æ–°å½“å‰å¸§
 	void Vedio_Update();
-	//¶ÈÎÂ¶È½Ó¿Ú
-	float Get_tem(int gray);
-	//Â¼Ïñ½Ó¿Ú
-	void Vedio_record();
-
+	//åº¦æ¸©åº¦æ¥å£
+    float Get_tem(unsigned short nGray);
+	//å½•åƒæ¥å£
+    bool Vedio_record();
+    //é‡Šæ”¾èµ„æº
+    void SDK_Close();
 private:
 	int capture_mode;
-	ifstream txtfile;		//mode0 : ¶ÁÈ¡Í¼Æ¬ĞòÁĞ
-	Mat current_mat;		//mode1 : ¶ÁÈ¡¾²Ì¬Í¼Æ¬
-	VideoCapture vcapture;	//mode2	: ¶ÁÈ¡ÊÓÆµ
+	ifstream txtfile;		//mode0 : è¯»å–å›¾ç‰‡åºåˆ—
+	Mat current_mat;		//mode1 : è¯»å–é™æ€å›¾ç‰‡
+	VideoCapture vcapture;	//mode2	: è¯»å–è§†é¢‘
+    LONG lUserID;
+    short IRUserID;
+
+
 public:
 	capture(string Filename, int mode):capture_mode(mode)
 	{
@@ -80,11 +84,13 @@ public:
 			current_mat = imread(Filename);
 		else if (mode==2)
 			vcapture.open(Filename);
+        SDK_Init();
 	}
 	~capture()
 	{
 		if (capture_mode == 2)
 			vcapture.release();
+        SDK_Close();
 	}
 	Mat getcurrentmat()
 	{
@@ -110,25 +116,25 @@ public:
 	{
 
 	}
-	double **Graytodigit(Mat inputMat, double tmax, double tmin);			//½«ºìÍâÍ¼Ïñ×ª»¯ÎªÊı¾İ±í¡£
+	double **Graytodigit(Mat inputMat, double tmax, double tmin);			//å°†çº¢å¤–å›¾åƒè½¬åŒ–ä¸ºæ•°æ®è¡¨ã€‚
 	double gettdev(Mat src,Point point);
 	double gettdev(int x, int y)
 	{
 		return gettdev(src,Point(x, y));
 	}
 
-	virtual vector<vector<Point>> get_suspicious_area(Mat src, suspiciousconf conf);				//·µ»Ø¿ÉÒÉÇøÓòµÄÂÖÀª
+	virtual vector<vector<Point>> get_suspicious_area(Mat src, suspiciousconf conf);				//è¿”å›å¯ç–‘åŒºåŸŸçš„è½®å»“
 	virtual int faultdetect() const;
 
 
-	Mat src;									//¶ÁÈëµÄÔ´Í¼Æ¬
-	Mat gray;									//Ô´Í¼Æ¬µÄ»Ò¶ÈÍ¼
-	Mat TH;										//Ô­Í¼Æ¬µÄ¶şÖµÍ¼
-	vector<vector<Point>> contours;				//¶Ô¶şÖµÍ¼±ßÔµ¼ì²âµÄ½á¹û
-	vector<vector<Point>> s_contour;			//¿ÉÒÉÇøÓò
+	Mat src;									//è¯»å…¥çš„æºå›¾ç‰‡
+	Mat gray;									//æºå›¾ç‰‡çš„ç°åº¦å›¾
+	Mat TH;										//åŸå›¾ç‰‡çš„äºŒå€¼å›¾
+	vector<vector<Point>> contours;				//å¯¹äºŒå€¼å›¾è¾¹ç¼˜æ£€æµ‹çš„ç»“æœ
+	vector<vector<Point>> s_contour;			//å¯ç–‘åŒºåŸŸ
 	vector<pair<Vec3b, double>> mapoft;
-	double **digitdata;							//ÎÂ¶ÈÍ¼
-	int failure_alarm_flag;						//¹ÊÕÏ±êÖ¾Î»
+	double **digitdata;							//æ¸©åº¦å›¾
+	int failure_alarm_flag;						//æ•…éšœæ ‡å¿—ä½
 	
 };
 

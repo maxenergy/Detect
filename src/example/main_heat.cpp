@@ -4,7 +4,7 @@ int main()
 {
     shared_ptr<capture> mc = make_shared<capture>("/home/zxb/SRC_C/Detect/testpic/heat/FLIR2026.jpg", 1);
 	heat_dec heat(mc);
-	//heat_dec heat("G:\\文档\\研究生毕设\\院自筹项目\\测试图片\\3渗水发热图片\\FLIR2010.jpg");
+	//heat_dec heat("G:\\鏂囨。\\鐮旂┒鐢熸瘯璁綷\闄㈣嚜绛归」鐩甛\娴嬭瘯鍥剧墖\\3娓楁按鍙戠儹鍥剧墖\\FLIR2010.jpg");
 	heat.detect();
 
 	cvWaitKey(0);
