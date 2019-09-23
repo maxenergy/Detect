@@ -26,116 +26,316 @@ using namespace cv;
 
 struct suspiciousconf
 {
-	suspiciousconf(int de, int desize, int c_min, int c_max, int t, int minn)
-	{
-		dande = de;
-		dandesize = desize;
-		contrast_min = c_min;
-		contrast_max = c_max;
-		th = t;
-		minnum = minn;
-	}
-	int dande;				//1：腐蚀 2膨胀 3腐蚀+膨胀
-	int dandesize;			//核大小
-	int contrast_min;		//锐化min
-	int contrast_max;		//锐化max
-	int th;					//0大律法 n二值化阈值
-	int minnum;				//轮廓点数最小阈值
+    suspiciousconf(int de, int desize, int c_min, int c_max, int t, int minn)
+    {
+        dande = de;
+        dandesize = desize;
+        contrast_min = c_min;
+        contrast_max = c_max;
+        th = t;
+        minnum = minn;
+    }
+    int dande;				//0无 1腐蚀 2膨胀 3腐蚀+膨胀
+    int dandesize;			//核大小
+    int contrast_min;		//锐化min
+    int contrast_max;		//锐化max
+    int th;					//0大律法 n二值化阈值
+    int minnum;				//轮廓点数最小阈值
+};
+
+struct record_time
+{
+    record_time():year(0),month(0),day(0),hour(0),min(0),sec(0)
+    {}
+
+    record_time(int iyear,int imonth, int iday, int ihour,int imin, int isec)
+    {
+
+        year=iyear;
+        month=imonth;
+        day=iday;
+        hour=ihour;
+        min=imin;
+        sec=isec;
+
+        if(iyear>2000 && iyear<3000&&imonth>0 && imonth<13&&iday>0 && iday<32&&ihour>=0 && ihour<24&&imin>=0 && imin<60&&isec>=0 && isec<60)
+            return;
+
+        while(true)
+        {
+            if(iyear>2000 && iyear<3000&&imonth>0 && imonth<13&&iday>0 && iday<32&&ihour>=0 && ihour<25&&imin>=0 && imin<61&&isec>=0 && isec<61)
+                break;
+            if(isec>59)
+            {
+                isec-=60;
+                imin+=1;
+            }
+            if(isec<0)
+            {
+                isec+=60;
+                imin-=1;
+            }
+
+            if(imin>59)
+            {
+                imin-=60;
+                ihour+=1;
+            }
+            if(imin<0)
+            {
+                imin+=60;
+                ihour-=1;
+            }
+
+            if(ihour>24)
+            {
+                ihour-=24;
+                iday+=1;
+            }
+            if(ihour<0)
+            {
+                ihour+=24;
+                iday-=1;
+            }
+
+        }
+
+        if(iyear>2000 && iyear<3000&&imonth>0 && imonth<13&&iday>0 && iday<32&&ihour>=0 && ihour<24&&imin>=0 && imin<60&&isec>=0 && isec<60)
+            return;
+        else
+        {
+            year=0;
+            month=0;
+            day=0;
+            hour=0;
+            min=0;
+            sec=0;
+        }
+
+    }
+
+    record_time(const tm *p)
+    {
+        year=p->tm_year + 1900;
+        month = p->tm_mon + 1;
+        day=p->tm_mday;
+        hour=p->tm_hour;
+        min=p->tm_min;
+        sec=p->tm_sec;
+    }
+
+    bool operator <(const record_time &m)
+    {
+        if(year<m.year)
+            return true;
+        else if(month<m.month)
+            return true;
+        else if(day<m.day)
+            return true;
+        else if(hour<m.hour)
+            return true;
+        else if(min<m.min)
+            return true;
+        else if(sec<m.sec)
+            return true;
+        else
+            return false;
+    }
+
+    bool isempty()
+    {
+        if(year==0 &&month==0 &&day==0 &&hour==0 &&min==0 && sec==0)
+            return true;
+        else
+            return false;
+    }
+    void set(int iyear,int imonth, int iday, int ihour,int imin, int isec)
+    {
+        year=iyear;
+        month=imonth;
+        day=iday;
+        hour=ihour;
+        min=imin;
+        sec=isec;
+
+        if(iyear>2000 && iyear<3000&&imonth>0 && imonth<13&&iday>0 && iday<32&&iday>0 && iday<32&&ihour>=0 && ihour<24&&imin>=0 && imin<60&&isec>=0 && isec<60)
+            return;
+
+        while(true)
+        {
+            if(iyear>2000 && iyear<3000&&imonth>0 && imonth<13&&iday>0 && iday<32&&iday>0 && iday<32&&ihour>=0 && ihour<25&&imin>=0 && imin<61&&isec>=0 && isec<61)
+                break;
+            if(isec>59)
+            {
+                isec-=60;
+                imin+=1;
+            }
+            if(isec<0)
+            {
+                isec+=60;
+                imin-=1;
+            }
+
+            if(imin>59)
+            {
+                imin-=60;
+                ihour+=1;
+            }
+            if(imin<0)
+            {
+                imin+=60;
+                ihour-=1;
+            }
+
+            if(ihour>24)
+            {
+                ihour-=24;
+                iday+=1;
+            }
+            if(ihour<0)
+            {
+                ihour+=24;
+                iday-=1;
+            }
+
+        }
+
+        if(iyear>2000 && iyear<3000&&imonth>0 && imonth<13&&iday>0 && iday<32&&iday>0 && iday<32&&ihour>=0 && ihour<24&&imin>=0 && imin<60&&isec>=0 && isec<60)
+            return;
+        else
+        {
+            year=0;
+            month=0;
+            day=0;
+            hour=0;
+            min=0;
+            sec=0;
+        }
+    }
+    int year;
+    int month;
+    int day;
+    int hour;
+    int min;
+    int sec;
 };
 
 class capture
 {
 public:
-	Mat srcrgb;
-	Mat srcir;
-	Mat srcuv;
+    Mat srcrgb;
+    Mat srcir;
+    Mat srcuv;
     BYTE * tmdata ;
     unsigned long tmdata_size ;
 
-	//初始化
-	void SDK_Init();
-	//登录设备
+    //初始化
+    void SDK_Init();
+    //登录设备
     bool SDK_Connect();
-	//开启视频流实时更新
+    //开启视频流实时更新
     bool Vedio_Stream_Set();
-	//更新当前帧
-	void Vedio_Update();
-	//度温度接口
+    //更新当前帧
+    void Vedio_Update();
+    //度温度接口
     float Get_tem(unsigned short nGray);
-	//录像接口
-    bool Vedio_record();
+    //录像接口
+    bool Vedio_record(record_time begin,record_time end,int port,string filename);
     //释放资源
     void SDK_Close();
 private:
-	int capture_mode;
-	ifstream txtfile;		//mode0 : 读取图片序列
-	Mat current_mat;		//mode1 : 读取静态图片
-	VideoCapture vcapture;	//mode2	: 读取视频
+    int capture_mode;
+    ifstream txtfile;		//mode0 : 读取图片序列
+    Mat current_mat;		//mode1 : 读取静态图片
+    VideoCapture vcapture;	//mode2	: 读取视频
+
+    //设备的 user id
     LONG lUserID;
     short IRUserID;
 
+    //获取（x，y）的灰度值
+    inline unsigned short getgray(int x,int y);
 
 public:
-	capture(string Filename, int mode):capture_mode(mode)
-	{
-		if (mode == 0)
-			txtfile.open(Filename);
-		else if (mode == 1)
-			current_mat = imread(Filename);
-		else if (mode==2)
-			vcapture.open(Filename);
+    capture()
+    {}
+    capture(string Filename, int mode):capture_mode(mode)
+    {
+        if (mode == 0)
+            txtfile.open(Filename);
+        else if (mode == 1)
+            current_mat = imread(Filename);
+        else if (mode==2)
+            vcapture.open(Filename);
         SDK_Init();
-	}
-	~capture()
-	{
-		if (capture_mode == 2)
-			vcapture.release();
+    }
+    ~capture()
+    {
+        if (capture_mode == 2)
+            vcapture.release();
         SDK_Close();
-	}
-	Mat getcurrentmat()
-	{
-		return current_mat;
-	}
+    }
+    Mat getcurrentmat()
+    {
+        return current_mat;
+    }
 
-	Mat getframe();
+    Mat getframe();
 
-	//lock
-	void lock();
-	//unlocdk
-	void unlock();
+    //lock
+    void lock();//            state_mes mes;
+    //            mes.settime_now();
+    //            record_time begin(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec-1);
+    //            record_time end(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec+1);
+
+    //            string vedio_name=mes.tostring();
+    //            string command = "mkdir -p " + vedio_name;
+    //            system(command.c_str());
+
+    //            Mat re=heat_dec.result.clone();
+
+    //            vedio_name=vedio_name+"/"+vedio_name+"_rgb.mp4";
+    //            mc->Vedio_record(begin,end,1,vedio_name);
+
+    //            s_server.send_decinf(mes,mc->srcrgb,re,mc->srcuv,vedio_name);
+    //unlocdk
+    void unlock();
 };
 
 class basedec
 {
 public:
-	basedec()
-	{
+    basedec()
+    {
 
-	}
-	virtual ~basedec()
-	{
+    }
+    virtual ~basedec()
+    {
 
-	}
-	double **Graytodigit(Mat inputMat, double tmax, double tmin);			//将红外图像转化为数据表。
-	double gettdev(Mat src,Point point);
-	double gettdev(int x, int y)
-	{
-		return gettdev(src,Point(x, y));
-	}
+    }
+    double **Graytodigit(Mat inputMat, double tmax, double tmin);			//将红外图像转化为数据表。
+    double gettdev(Mat src,Point point);
+    double gettdev(int x, int y)
+    {
+        return gettdev(src,Point(x, y));
+    }
 
-	virtual vector<vector<Point>> get_suspicious_area(Mat src, suspiciousconf conf);				//返回可疑区域的轮廓
-	virtual int faultdetect() const;
+    virtual vector<vector<Point>> get_suspicious_area(Mat src, suspiciousconf conf);				//返回可疑区域的轮廓
+    virtual int faultdetect();
 
 
-	Mat src;									//读入的源图片
-	Mat gray;									//源图片的灰度图
-	Mat TH;										//原图片的二值图
-	vector<vector<Point>> contours;				//对二值图边缘检测的结果
-	vector<vector<Point>> s_contour;			//可疑区域
-	vector<pair<Vec3b, double>> mapoft;
-	double **digitdata;							//温度图
-	int failure_alarm_flag;						//故障标志位
-	
+    Mat src;									//读入的源图片
+    Mat gray;									//源图片的灰度图
+    Mat TH;										//原图片的二值图
+    Mat result_pic;                                 //原图片的二值图
+    vector<vector<Point>> contours;				//对二值图边缘检测的结果
+    vector<vector<Point>> s_contour;			//可疑区域
+    vector<pair<Vec3b, double>> mapoft;
+    unsigned short *digitdata;							//温度图
+    int failure_alarm_flag;						//故障标志位
+
 };
 
 Point centerofV(const vector<Point> &p);
+
+

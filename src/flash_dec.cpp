@@ -1,33 +1,34 @@
 #include "flash_dec.h"
 
-void flash_dec::detect()
+int flash_dec::detect()
 {
-	temporalctrl.addf("area", f_num);
-	src = mycapture->getframe();
-	while (!src.empty())
+    src = mycapture->srcuv;
+    if (!src.empty())
 	{
-		src = mycapture->getframe();
 		suspiciousconf conf(1, 6, 50, 200, 0, 50);
 		s_contour=get_suspicious_area(src, conf);
 		temporalctrl.update(s_contour);
 
 		f1 = temporalctrl.return_f(0, "area");
-		cout << "####################################################" << endl;
-		cout << "特征area：" << endl;
-		for (auto i : f1)
-		{
-			for (auto i2 : i)
-			{
-				cout << i2.first << ":" << i2.second[0] << "	";
-			}
-			cout << endl;
-		}
-		cout << "####################################################" << endl;
-		//imshow("src", src);
+
+//		cout << "####################################################" << endl;
+//		cout << "特征area：" << endl;
+//		for (auto i : f1)
+//		{
+//			for (auto i2 : i)
+//			{
+//				cout << i2.first << ":" << i2.second[0] << "	";
+//			}
+//			cout << endl;
+//		}
+//		cout << "####################################################" << endl;
+
 		failure_alarm_flag = faultdetect();
 		cout << "设备状态类型为：" << failure_alarm_flag << endl << endl;
-		cvWaitKey(20);
+        cvWaitKey(20);
+        return failure_alarm_flag;
 	}
+    return 0;
 
 }
 
@@ -61,10 +62,18 @@ int flash_dec::faultdetect()
 		}
 	}
 
-	Mat drawing(TH.size(), CV_8UC3, cv::Scalar(255, 255, 255));
-	drawContours(drawing, contours, -1, Scalar(0, 0, 0), 1);
-	drawContours(drawing, pwater, -1, Scalar(0, 0, 255), 1);
-	imshow("result", drawing);
+//	Mat drawing(TH.size(), CV_8UC3, cv::Scalar(255, 255, 255));
+//	drawContours(drawing, contours, -1, Scalar(0, 0, 0), 1);
+//	drawContours(drawing, pwater, -1, Scalar(0, 0, 255), 1);
+//	imshow("result", drawing);
+
+    result_pic=src.clone();
+    for(auto v : pwater)
+    {
+        Rect rect = boundingRect(v);
+        rectangle(result_pic, rect, Scalar(0, 0, 255));
+    }
+
 	return result;
 }
 

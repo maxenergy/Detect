@@ -19,10 +19,12 @@ class water_seepage_dec:public basedec
 public:
 	water_seepage_dec(shared_ptr<capture> mc) :mycapture(mc)
 	{
-
+        temporalctrl.addf("area", f_area);
+        //temporalctrl.addf("perimeter", f_perimeter);
+        //temporalctrl.addf("circle", f_circle);
 	}
-	void detect();																//返回值：0正常；1疑似渗水
-	void dec_w(double **inputData, vector<vector<Point>> &suspicious_contour);	//对可疑区域进行筛选判断
+    int detect();																//返回值：0正常；1疑似渗水
+    void dec_w(WORD *inputData, vector<vector<Point>> &suspicious_contour);	//对可疑区域进行筛选判断
 	int faultdetect();
 
 private:

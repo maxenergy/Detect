@@ -7,70 +7,70 @@ struct pic_rgb{};
 struct pic_ir{};
 struct pic_uv{};
 template <class pic>
-void stream_lock(pic)
+inline void stream_lock(pic)
 {}
 template <>
-void stream_lock<pic_rgb>(pic_rgb)
+inline void stream_lock<pic_rgb>(pic_rgb)
 {
     keyrgb.lock();
 }
 template <>
-void stream_lock<pic_ir>(pic_ir)
+inline void stream_lock<pic_ir>(pic_ir)
 {
     keyir.lock();
 }
 template <>
-void stream_lock<pic_uv>(pic_uv)
+inline void stream_lock<pic_uv>(pic_uv)
 {
     keyuv.lock();
 }
-void tm_lock()
+inline void tm_lock()
 {
     keytp.lock();
 }
 
 template <class pic>
-void stream_unlock(pic)
+inline void stream_unlock(pic)
 {}
 template <>
-void stream_unlock<pic_rgb>(pic_rgb)
+inline void stream_unlock<pic_rgb>(pic_rgb)
 {
     keyrgb.unlock();
 }
 template <>
-void stream_unlock<pic_ir>(pic_ir)
+inline void stream_unlock<pic_ir>(pic_ir)
 {
     keyir.unlock();
 }
 template <>
-void stream_unlock<pic_uv>(pic_uv)
+inline void stream_unlock<pic_uv>(pic_uv)
 {
     keyuv.unlock();
 }
-void tm_unlock()
+inline void tm_unlock()
 {
     keytp.unlock();
 }
 
 template <class pic>
-bool stream_t(pic)
+inline bool stream_t(pic)
 {}
 template <>
-bool stream_t<pic_rgb>(pic_rgb)
+inline bool stream_t<pic_rgb>(pic_rgb)
 {
     return trgb;
 }
 template <>
-bool stream_t<pic_ir>(pic_ir)
+inline bool stream_t<pic_ir>(pic_ir)
 {
     return tir;
 }
 template <>
-bool stream_t<pic_uv>(pic_uv)
+inline bool stream_t<pic_uv>(pic_uv)
 {
     return tuv;
 }
-bool tm_t()
+inline bool tm_t()
 {
     return ttp;
 }
@@ -242,21 +242,9 @@ vector<vector<Point>> basedec::get_suspicious_area(Mat src, suspiciousconf conf)
     return sv;
 }
 
-int basedec::faultdetect() const
+int basedec::faultdetect()
 {
     return 0;
-}
-
-Point centerofV(const vector<Point> &p)
-{
-    int sumx = 0;
-    int sumy = 0;
-    for (Point i : p)
-    {
-        sumx += i.x;
-        sumy += i.y;
-    }
-    return Point(sumx / p.size(), sumy / p.size());
 }
 
 Mat capture::getframe()
@@ -334,20 +322,20 @@ Mat YUV_srcrgb;
 Mat YUV_srcir;
 Mat YUV_srcuv;
 template<class pic>
-void setpic(Mat src)
+inline void setpic(Mat src)
 {}
 template<>
-void setpic<pic_rgb>(Mat src)
+inline void setpic<pic_rgb>(Mat src)
 {
     YUV_srcrgb=src.clone();
 }
 template<>
-void setpic<pic_ir>(Mat src)
+inline void setpic<pic_ir>(Mat src)
 {
     YUV_srcrgb=src.clone();
 }
 template<>
-void setpic<pic_uv>(Mat src)
+inline void setpic<pic_uv>(Mat src)
 {
     YUV_srcrgb=src.clone();
 }
@@ -362,10 +350,10 @@ void CALLBACK DecCBFun(int nPort, char* pBuf, int nSize, FRAME_INFO* pFrameInfo,
         {
             Mat YUVImage(pFrameInfo->nHeight + pFrameInfo->nHeight / 2, pFrameInfo->nWidth, CV_8UC1, (unsigned char*)pBuf);
             setpic<pic>(YUVImage);
-//            Mat step;
-//            cvtColor(YUVImage, step, COLOR_YUV2BGR_YV12);
-//            imshow("test",step);
-//            cvWaitKey(10);
+            //            Mat step;
+            //            cvtColor(YUVImage, step, COLOR_YUV2BGR_YV12);
+            //            imshow("test",step);
+            //            cvWaitKey(10);
             YUVImage.~Mat();
         }
         stream_unlock(pic());
@@ -376,20 +364,20 @@ LONG lPort_rgb;
 LONG lPort_ir;
 LONG lPort_uv;
 template<class pic>
-LONG &get_lPort(pic)
+inline LONG &get_lPort(pic)
 {}
 template<>
-LONG &get_lPort<pic_rgb>(pic_rgb)
+inline LONG &get_lPort<pic_rgb>(pic_rgb)
 {
     return lPort_rgb;
 }
 template<>
-LONG &get_lPort<pic_ir>(pic_ir)
+inline LONG &get_lPort<pic_ir>(pic_ir)
 {
     return lPort_ir;
 }
 template<>
-LONG &get_lPort<pic_uv>(pic_uv)
+inline LONG &get_lPort<pic_uv>(pic_uv)
 {
     return lPort_uv;
 }
@@ -574,34 +562,42 @@ float capture::Get_tem(unsigned short nGray)
     return Temperature_GetTempFromGray(nGray, 0.96, 0, pTempPara,TempParaSize,m_RawHead.nCalcType); //返回温度
 }
 
-bool capture::Vedio_record()
+bool capture::Vedio_record(record_time begin,record_time end,int port,string filename)
 {
-    usleep(1000);
-    NET_DVR_VOD_PARA struVodPara={0};
-    struVodPara.dwSize=sizeof(struVodPara);
-    struVodPara.struIDInfo.dwChannel=1; //通道号
-    struVodPara.hWnd=0; //回放窗口
+    time_t timep;
+    time(&timep);
+    tm *nowTime= localtime(&timep);
+    record_time now(nowTime);
+    if(now<end){
+        sleep(1);
+        if(now<end)
+            return false;
+    }
 
-    struVodPara.struBeginTime.dwYear = 2013; //开始时间
-    struVodPara.struBeginTime.dwMonth = 6;
-    struVodPara.struBeginTime.dwDay = 14;
-    struVodPara.struBeginTime.dwHour = 9;
-    struVodPara.struBeginTime.dwMinute = 0;
-    struVodPara.struBeginTime.dwSecond =0;
 
-    struVodPara.struEndTime.dwYear = 2013; //结束时间
-    struVodPara.struEndTime.dwMonth = 6;
-    struVodPara.struEndTime.dwDay = 14;
-    struVodPara.struEndTime.dwHour = 10;
-    struVodPara.struEndTime.dwMinute = 7;
-    struVodPara.struEndTime.dwSecond = 0;
+    NET_DVR_PLAYCOND struDownloadCond={0};
+    struDownloadCond.dwChannel=port; //通道号
+    struDownloadCond.struStartTime.dwYear = begin.year; //开始时间
+    struDownloadCond.struStartTime.dwMonth = begin.month;
+    struDownloadCond.struStartTime.dwDay = begin.day;
+    struDownloadCond.struStartTime.dwHour = begin.hour;
+    struDownloadCond.struStartTime.dwMinute = begin.min;
+    struDownloadCond.struStartTime.dwSecond =begin.sec;
+
+    struDownloadCond.struStopTime.dwYear= end.year; //结束时间
+    struDownloadCond.struStopTime.dwMonth = end.month;
+    struDownloadCond.struStopTime.dwDay = end.day;
+    struDownloadCond.struStopTime.dwHour = end.hour;
+    struDownloadCond.struStopTime.dwMinute = end.min;
+    struDownloadCond.struStopTime.dwSecond= end.sec;
     //---------------------------------------
-    //按时间回放
-    int hPlayback;
-    hPlayback = NET_DVR_PlayBackByTime_V40(lUserID, &struVodPara);
+    //按时间下载
+    int hPlayback = NET_DVR_GetFileByTime_V40(lUserID,const_cast<char *>(filename.c_str()),&struDownloadCond);
+
+
     if(hPlayback < 0)
     {
-        printf("NET_DVR_PlayBackByTime_V40 fail,last error %d\n",NET_DVR_GetLastError());
+        printf("Vedio failed,last error %d\n",NET_DVR_GetLastError());
         NET_DVR_Logout(lUserID);
         NET_DVR_Cleanup();
         return false;
@@ -615,8 +611,16 @@ bool capture::Vedio_record()
         NET_DVR_Cleanup();
         return false;
     }
-    usleep(1000);
-    //millisecond
+
+    int nPos = 0;
+    for(nPos = 0; nPos < 100&&nPos>=0; nPos = NET_DVR_GetDownloadPos(hPlayback))
+    {
+        cout<<"进度："<<nPos<<endl;
+        usleep(5000);
+    }
+    cout<<"进度："<<100<<endl;
+
+
     if(!NET_DVR_StopPlayBack(hPlayback))
     {
         printf("failed to stop file [%d]\n",NET_DVR_GetLastError());
@@ -634,3 +638,29 @@ void capture::SDK_Close()
     //释放 SDK 资源
     NET_DVR_Cleanup();
 }
+
+inline unsigned short capture::getgray(int x,int y)
+{
+    return ((WORD *)m_pData)[x+640*y];
+}
+
+Point centerofV(const vector<Point> &p)
+{
+    int sumx = 0;
+    int sumy = 0;
+    for (Point i : p)
+    {
+        sumx += i.x;
+        sumy += i.y;
+    }
+    return Point(sumx / p.size(), sumy / p.size());
+}
+
+
+
+
+
+
+
+
+

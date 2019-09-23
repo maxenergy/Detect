@@ -22,7 +22,7 @@ class heat_dec:public basedec
 	struct Tconf
 	{
 		Point position;
-		double tdev;								//设备检测点的温度
+        float tdev;								//设备检测点的温度
 		double tother;								//同环境设备参考温度
 		double temperature_rise;					//温升：被测设备表面温度和环境温度参照体表面温度之差。
 		double temperature_difference;				//温差：不同被测设备或同一被测设备不同部位之间的温度差。
@@ -31,14 +31,16 @@ class heat_dec:public basedec
 public:
 	heat_dec(shared_ptr<capture> mc) : mycapture(mc)
 	{
+        readxml("conf.xml");
 		src = mycapture->getframe();
 		imshow("src", src);
 	}
-	void detect();								//测试接口，测试主要流程。
+    int detect();								//测试接口，测试主要流程。
 
 	//主要流程方法
-	void culate(double **inputData,const vector<vector<Point>> &dev_contour);	//计算设备的温度特征值。
-	int faultdetect() const;											//返回值：0正常；1一般缺陷；2严重缺陷；3危机缺陷
+    void culate(WORD *inputData,const vector<vector<Point>> &dev_contour);	//计算设备的温度特征值。
+    int faultdetect();											//返回值：0正常；1一般缺陷；2严重缺陷；3危机缺陷
+    void drawre(Tconf &tf);
 
 private:
 	shared_ptr<capture> mycapture;

@@ -15,21 +15,22 @@
 using namespace cv;
 using namespace std;
 
+vector<double> f_num(const vector<Point> &);				//面积
+
 class flash_dec :public basedec
 {
 public:
 	flash_dec(shared_ptr<capture> mc) : mycapture(mc)
 	{
-
+        temporalctrl.addf("area", f_num);
 	}
-	void detect();																//返回值：0正常；1疑似渗水
+    int detect();																//返回值：0正常；1疑似渗水
 	int faultdetect();
-
 private:
 	shared_ptr<capture> mycapture;
 	temporaldatam temporalctrl;
 	temporaldatam::fstruct f1;
 };
 
-vector<double> f_num(const vector<Point> &);				//面积
+
 

@@ -1,18 +1,11 @@
 #include"fire_dec.h"
 
-void fire_dec::detect()
+int fire_dec::detect()
 {
-	src = mycapture->getframe();
-	temporalctrl.addf("area", f_area);
-	temporalctrl.addf("perimeter", f_perimeter);
-	temporalctrl.addf("circle", f_circle);
-	temporalctrl.addf("cofc", f_cofc);
-	//digitdata = Graytodigit(src, 41, 31);
-	//double centerT = gettdev(160, 120);
-	//cout << centerT;
-	while (!src.empty())
+    src = mycapture->srcir;
+    digitdata=(unsigned short *)mycapture->tmdata;
+    if (!src.empty())
 	{
-		imshow("src", src);
 		suspiciousconf conf(0, 0, 50, 200, 0, 60);
 		s_contour = get_suspicious_area(src, conf);
 		temporalctrl.update(s_contour);
@@ -35,14 +28,14 @@ void fire_dec::detect()
 		//cout << "####################################################" << endl;
 
 		failure_alarm_flag = faultdetect();
-		cout << "设备状态类型为：" << failure_alarm_flag << endl << endl;
-
+        cout << "设备状态类型为：" << failure_alarm_flag << endl << endl;
 		cvWaitKey(20);
-		src = mycapture->getframe();
+        return failure_alarm_flag;
 	}
+    return 0;
 }
 
-int fire_dec::faultdetect() const
+int fire_dec::faultdetect()
 {
 	int result = 0;
 	vector<vector<Point>> pwater;
@@ -51,7 +44,7 @@ int fire_dec::faultdetect() const
 		int sum[4] = { 0 };
 		int lasttimeid[3] = { -2 };
 		double last[3] = { 0 };
-		for (auto &i : f1[n])					//根据面积变化的情况确定是否是渗水区域，可能还需要调整
+        for (auto &i : f1[n])					//根据面积变化的情况确定是否是明火区域，可能还需要调整
 		{
 			double th = 30;
 			if (i.first != lasttimeid[0] && (i.second[0] - last[0] > th || i.second[0] - last[0] < -th))
@@ -59,7 +52,7 @@ int fire_dec::faultdetect() const
 			lasttimeid[0] = i.first;
 			last[0] = i.second[0];
 		}
-		for (auto &i : f2[n])					//根据周长变化的情况确定是否是渗水区域，可能还需要调整
+        for (auto &i : f2[n])					//根据周长变化的情况确定是否是明火区域，可能还需要调整
 		{
 			double th = 8;
 			if (i.first != lasttimeid[1] && (i.second[0] - last[1] > th || i.second[0] - last[1] < -th))
@@ -67,7 +60,7 @@ int fire_dec::faultdetect() const
 			lasttimeid[1] = i.first;
 			last[1] = i.second[0];
 		}
-		for (auto &i : f3[n])					//根据似圆度变化的情况确定是否是渗水区域，可能还需要调整
+        for (auto &i : f3[n])					//根据似圆度变化的情况确定是否是明火区域，可能还需要调整
 		{
 			double th = 0.02;
 			if (i.first != lasttimeid[2] && (i.second[0] - last[2] > th || i.second[0] - last[2] < -th))
@@ -76,7 +69,7 @@ int fire_dec::faultdetect() const
 			lasttimeid[2] = i.first;
 			last[2] = i.second[0];
 		}
-		for (auto ptr1 = f4[n].begin(), ptr2 = f4[n].begin()++;ptr1 != f4[n].end();ptr1++)
+        for (auto ptr1 = f4[n].begin(), ptr2 = f4[n].begin()++; ptr1 != f4[n].end(); ptr1++)
 		{
 			double th = 0.003;
 			if (++ptr2 == f4[n].end())
@@ -104,15 +97,23 @@ int fire_dec::faultdetect() const
 		}
 	}
 
-	Mat drawing(TH.size(), CV_8UC3, cv::Scalar(255, 255, 255));
-	drawContours(drawing, contours, -1, Scalar(0, 0, 0), 1);
-	drawContours(drawing, pwater, -1, Scalar(0, 0, 255), 1);
-	imshow("result", drawing);
+//	Mat drawing(TH.size(), CV_8UC3, cv::Scalar(255, 255, 255));
+//	drawContours(drawing, contours, -1, Scalar(0, 0, 0), 1);
+//	drawContours(drawing, pwater, -1, Scalar(0, 0, 255), 1);
+//	imshow("result", drawing);
+
+    result_pic=src.clone();
+    for(auto v : pwater)
+    {
+        Rect rect = boundingRect(v);
+        rectangle(result_pic, rect, Scalar(0, 0, 255));
+    }
+
 	return result;
 }
 
 
-
+//所有特征值的平方和开根号
 double culdis(const vector<double> &v1, const vector<double> &v2)
 {
 	double result = 0;

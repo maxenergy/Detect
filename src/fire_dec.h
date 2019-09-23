@@ -20,9 +20,13 @@ class fire_dec:public basedec
 public:
 	fire_dec(shared_ptr<capture> mc):mycapture(mc)
 	{
+        temporalctrl.addf("area", f_area);
+        temporalctrl.addf("perimeter", f_perimeter);
+        temporalctrl.addf("circle", f_circle);
+        temporalctrl.addf("cofc", f_cofc);
 	}
-	void detect();
-	int faultdetect() const;
+    int detect();
+    int faultdetect();
 private:
 	shared_ptr<capture> mycapture;
 	temporaldatam temporalctrl{20,1};

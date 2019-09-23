@@ -1,26 +1,20 @@
 #include"water_seepage_dec.h"
 
 //测试接口，测试主要流程。
-void water_seepage_dec::detect()
+int water_seepage_dec::detect()
 {
-	temporalctrl.addf("area", f_area);
-	//temporalctrl.addf("perimeter", f_perimeter);
-	//temporalctrl.addf("circle", f_circle);
-	while (1)
-	{
-        src = mycapture->getframe();
-		if (src.empty())
-			break;
-		digitdata = Graytodigit(src, 31, 24);
+    src = mycapture->srcir;
+    digitdata=(unsigned short *)mycapture->tmdata;
 
+    if (!src.empty())
+	{
 		suspiciousconf conf(1, 1, 50, 200, 210, 50);
 		s_contour = get_suspicious_area(src, conf);
-
 		dec_w(digitdata, s_contour);
-
 		temporalctrl.update(s_contour);
 
 		f1 = temporalctrl.return_f(0, "area");
+
 		cout << "####################################################" << endl;
 		cout << "特征area：" << endl;
 		for (auto i : f1)
@@ -34,14 +28,13 @@ void water_seepage_dec::detect()
 		cout << "####################################################" << endl;
 
 		failure_alarm_flag = faultdetect();
-
 		cout << "设备状态类型为：" << failure_alarm_flag << endl << endl;
-
-		//cvWaitKey(0);
+        return failure_alarm_flag;
 	}
+    return 0;
 }
 //对可疑区域进行筛选判断
-void water_seepage_dec::dec_w(double **inputData, vector<vector<Point>> &suspicious_contour)
+void water_seepage_dec::dec_w(WORD *inputData, vector<vector<Point>> &suspicious_contour)
 {
 	vector<vector<Point>> hull(suspicious_contour.size());
 	vector<vector<Point>> hullo;
@@ -82,8 +75,8 @@ void water_seepage_dec::dec_w(double **inputData, vector<vector<Point>> &suspici
 	vector<vector<Point>> water_are;
 	for (size_t i = 0; i < suspicious_contour.size(); i++)
 	{
-		double sumti = 0, numi = 0;
-		double sumto = 0, numo = 0;
+        float sumti = 0, numi = 0;
+        float sumto = 0, numo = 0;
 		for (int row = 0; row < src.rows; row++)
 		{
 			for (int col = 0; col < src.cols; col++)
@@ -95,12 +88,12 @@ void water_seepage_dec::dec_w(double **inputData, vector<vector<Point>> &suspici
 				
 				if (Eptr[row][col] == 1)
 				{
-					sumti += inputData[row][col];
+                    sumti += inputData[row*640+col];
 					++numi;
 				}
 				if (Eptro[row][col] == 1 && Eptri[row][col] == -1)
 				{
-					sumto += inputData[row][col];
+                    sumto += inputData[row*640+col];
 					++numo;
 				}
 				//if(Eptro[row][col]==1)
@@ -109,9 +102,10 @@ void water_seepage_dec::dec_w(double **inputData, vector<vector<Point>> &suspici
 				//	raw_dist.at<float>(row, col) = 0;
 			}
 		}
-		sumti = sumti / numi;
-		sumto = sumto / numo;
-		if (sumto > sumti&&sumto - sumti > 0.5)
+        sumti =  mycapture->Get_tem(sumti / numi);
+        sumto = mycapture->Get_tem(sumto / numo);
+
+        if (sumto > sumti&&sumto - sumti > 0.5)   // 0.5为内外温差阈值
 		{
 			water_are.push_back(suspicious_contour[i]);
 		}
@@ -166,10 +160,18 @@ int water_seepage_dec::faultdetect()
 		}
 	}
 
-	Mat drawing(TH.size(), CV_8UC3, cv::Scalar(255, 255, 255));
-	drawContours(drawing, contours, -1, Scalar(0, 0, 0), 1);
-	drawContours(drawing, pwater, -1, Scalar(0, 0, 255), 1);
-	imshow("result", drawing);
+//	Mat drawing(TH.size(), CV_8UC3, cv::Scalar(255, 255, 255));
+//	drawContours(drawing, contours, -1, Scalar(0, 0, 0), 1);
+//	drawContours(drawing, pwater, -1, Scalar(0, 0, 255), 1);
+//	imshow("result", drawing);
+
+    result_pic=src.clone();
+    for(auto v : pwater)
+    {
+        Rect rect = boundingRect(v);
+        rectangle(result_pic, rect, Scalar(0, 0, 255));
+    }
+
 	return result;
 }
 
