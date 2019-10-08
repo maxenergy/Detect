@@ -237,8 +237,13 @@ public:
     bool Vedio_Stream_Set();
     //更新当前帧
     void Vedio_Update();
+
     //度温度接口
+    //获取（x，y）的灰度值
+    unsigned short getgray(int x,int y);
+    //将灰度值转化为温度
     float Get_tem(unsigned short nGray);
+
     //录像接口
     bool Vedio_record(record_time begin,record_time end,int port,string filename);
     //释放资源
@@ -253,8 +258,7 @@ private:
     LONG lUserID;
     short IRUserID;
 
-    //获取（x，y）的灰度值
-    inline unsigned short getgray(int x,int y);
+
 
 public:
     capture()

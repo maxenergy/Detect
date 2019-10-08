@@ -461,13 +461,13 @@ void capture::SDK_Init()
     NET_DVR_SetReconnect(10000, true);
 
     //IR
-    //    unsigned char strImageVersion[24] = {0};
-    //    NetDev_GetVersion(strImageVersion);
-    //    cout<<"IR SDK Version:"<<strImageVersion;
-    //    char strTempVersion[24] = {0};
-    //    TEMPALG_GetVersion(strTempVersion);
-    //    cout<<"TEM SDK Version:"<<strTempVersion;
-    //    NetDev_Init();
+    unsigned char strImageVersion[24] = {0};
+    NetDev_GetVersion(strImageVersion);
+    cout<<"IR SDK Version:"<<strImageVersion;
+    char strTempVersion[24] = {0};
+    TEMPALG_GetVersion(strTempVersion);
+    cout<<"TEM SDK Version:"<<strTempVersion;
+    NetDev_Init();
 
 }
 
@@ -485,12 +485,12 @@ bool capture::SDK_Connect()
     NET_DVR_SetExceptionCallBack_V30(0, nullptr,g_ExceptionCallBack, nullptr);
 
     //IR
-    //    IRUserID=NetDev_Connect("ip",CONNECT_TYPE_ULIRNET);
-    //    if(IRUserID==-1)
-    //    {
-    //        cout<<"IR connect error";
-    //        return false;
-    //    }
+    IRUserID=NetDev_Connect("ip",CONNECT_TYPE_ULIRNET);
+    if(IRUserID==-1)
+    {
+        cout<<"IR connect error";
+        return false;
+    }
 
     return true;
 }
@@ -515,7 +515,7 @@ bool capture::Vedio_Stream_Set()
     }
 
     struPlayInfo.lChannel = 2; //预览通道号
-    //lRealPlayHandle = NET_DVR_RealPlay_V40(lUserID, &struPlayInfo, g_RealDataCallBack_V30<pic_ir>, nullptr);
+    lRealPlayHandle = NET_DVR_RealPlay_V40(lUserID, &struPlayInfo, g_RealDataCallBack_V30<pic_ir>, nullptr);
     if (lRealPlayHandle < 0){
         printf("NET_DVR_RealPlay_V40 port2 error\n");
         NET_DVR_Logout(lUserID);
@@ -524,7 +524,7 @@ bool capture::Vedio_Stream_Set()
     }
 
     struPlayInfo.lChannel = 3; //预览通道号
-    //lRealPlayHandle = NET_DVR_RealPlay_V40(lUserID, &struPlayInfo, g_RealDataCallBack_V30<pic_uv>, nullptr);
+    lRealPlayHandle = NET_DVR_RealPlay_V40(lUserID, &struPlayInfo, g_RealDataCallBack_V30<pic_uv>, nullptr);
     if (lRealPlayHandle < 0){
         printf("NET_DVR_RealPlay_V40 port3 error\n");
         NET_DVR_Logout(lUserID);
@@ -533,12 +533,12 @@ bool capture::Vedio_Stream_Set()
     }
 
     //IR
-    //    BOOL ret = NetDev_StartRealStream(IRUserID,STREAM_TYPE_GRAYDATA);
-    //    if(ret == FALSE){
-    //        cout<<"IR:开始获取视频失败"<<endl;
-    //        return false;
-    //    }
-    //    NetDev_SetRealStreamCallBack(IRUserID,funRealStream,(int *)this);
+    BOOL ret = NetDev_StartRealStream(IRUserID,STREAM_TYPE_GRAYDATA);
+    if(ret == FALSE){
+        cout<<"IR:开始获取视频失败"<<endl;
+        return false;
+    }
+    NetDev_SetRealStreamCallBack(IRUserID,funRealStream,(int *)this);
     return true;
 }
 
@@ -550,9 +550,9 @@ void capture::Vedio_Update()
     cvtColor(YUV_srcuv, srcuv, COLOR_YUV2BGR_YV12);
 
     //IR
-    //    tmdata_size = m_dwDataSize;
-    //    tmdata=(BYTE *)alloca(tmdata_size);
-    //    memcpy(tmdata,m_pData,tmdata_size);
+    tmdata_size = m_dwDataSize;
+    tmdata=(BYTE *)alloca(tmdata_size);
+    memcpy(tmdata,m_pData,tmdata_size);
     unlock();
 }
 
@@ -639,7 +639,7 @@ void capture::SDK_Close()
     NET_DVR_Cleanup();
 }
 
-inline unsigned short capture::getgray(int x,int y)
+unsigned short capture::getgray(int x,int y)
 {
     return ((WORD *)m_pData)[x+640*y];
 }
