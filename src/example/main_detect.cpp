@@ -64,7 +64,7 @@ int main()
 //    /************************** Part two-1 begin ********************************************/
 //    //建立网络通信连接
 //    socketinit();
-    server s_server;
+//    server s_server;
 //    //s_server.s_connect("39.108.229.151", 8010);
 //    s_server.s_connect("127.0.0.1", 8010);
 //    s_server.send_buff_push(login_mes("server", "123456"));
@@ -90,153 +90,153 @@ int main()
 
 
 
-    /************************** Part three begin ********************************************/
-    //建立检测功能模块
-    heat_dec heat_dec(mc);
-    fire_dec fire_dec(mc);
-    water_seepage_dec water_dec(mc);
-    flash_dec flash_dec(mc);
+////    /************************** Part three begin ********************************************/
+////    //建立检测功能模块
+////    heat_dec heat_dec(mc);
+////    fire_dec fire_dec(mc);
+////    water_seepage_dec water_dec(mc);
+////    flash_dec flash_dec(mc);
 
-    //检测流程
-    while(true)
-    {
-        int Fps = fps();
-        cout<<"Fps : "<<Fps<<endl;
+////    //检测流程
+////    while(true)
+////    {
+////        int Fps = fps();
+////        cout<<"Fps : "<<Fps<<endl;
 
-        //从设备更新图像数据
-        mc->Vedio_Update();
+////        //从设备更新图像数据
+////        mc->Vedio_Update();
 
-        //检测此帧图像
-//        //明火检测
-//        int Result_fire = fire_dec.detect();
-//        if(Result_fire)
-//        {
-//            state_mes mes;
-//            mes.settime_now();
-//            record_time begin(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec-1);
-//            record_time end(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec+1);
+////        //检测此帧图像
+//////        //明火检测
+//////        int Result_fire = fire_dec.detect();
+//////        if(Result_fire)
+//////        {
+//////            state_mes mes;
+//////            mes.settime_now();
+//////            record_time begin(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec-1);
+//////            record_time end(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec+1);
 
-//            string vedio_name=mes.tostring();
-//            string command = "mkdir -p " + s_server.getbasefile() + vedio_name;
-//            system(command.c_str());
-//            vedio_name=s_server.getbasefile() + vedio_name+"/"+vedio_name+"_vedio.mp4";
+//////            string vedio_name=mes.tostring();
+//////            string command = "mkdir -p " + s_server.getbasefile() + vedio_name;
+//////            system(command.c_str());
+//////            vedio_name=s_server.getbasefile() + vedio_name+"/"+vedio_name+"_vedio.mp4";
 
-//            mc->Vedio_record(begin,end,1,vedio_name);
-//            Mat re=fire_dec.result_pic.clone();
+//////            mc->Vedio_record(begin,end,1,vedio_name);
+//////            Mat re=fire_dec.result_pic.clone();
 
-//            s_server.savefault(mes,mc->srcrgb,re,mc->srcuv);
-//            s_server.send_decinf(3,mes,mc->srcrgb,re,mc->srcuv,vedio_name);
-//            continue;
-//        }
-//        if(TEST)
-//        {
-//            cout<<"Result_fire: "<<Result_fire<<endl;
-//            if(Result_fire)
-//            {
-//                Mat re=fire_dec.result_pic;
-//                imshow("Result_fire",re);
-//            }
-//        }
+//////            s_server.savefault(mes,mc->srcrgb,re,mc->srcuv);
+//////            s_server.send_decinf(3,mes,mc->srcrgb,re,mc->srcuv,vedio_name);
+//////            continue;
+//////        }
+//////        if(TEST)
+//////        {
+//////            cout<<"Result_fire: "<<Result_fire<<endl;
+//////            if(Result_fire)
+//////            {
+//////                Mat re=fire_dec.result_pic;
+//////                imshow("Result_fire",re);
+//////            }
+//////        }
 
-        //放电检测
-        int Result_flash = flash_dec.detect();
-        if(Result_flash)
-        {
-            state_mes mes;
-            mes.settime_now();
-            record_time begin(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec-1);
-            record_time end(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec+1);
+////        //放电检测
+////        int Result_flash = flash_dec.detect();
+////        if(Result_flash)
+////        {
+////            state_mes mes;
+////            mes.settime_now();
+////            record_time begin(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec-1);
+////            record_time end(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec+1);
 
-            string vedio_name=mes.tostring();
-            string command = "mkdir -p " + s_server.getbasefile() +  vedio_name;
-            system(command.c_str());
-            vedio_name= s_server.getbasefile() + vedio_name+"/"+vedio_name+"_vedio.mp4";
+////            string vedio_name=mes.tostring();
+////            string command = "mkdir -p " + s_server.getbasefile() +  vedio_name;
+////            system(command.c_str());
+////            vedio_name= s_server.getbasefile() + vedio_name+"/"+vedio_name+"_vedio.mp4";
 
-            mc->Vedio_record(begin,end,1,vedio_name);
-            Mat re=flash_dec.result_pic.clone();
+////            mc->Vedio_record(begin,end,1,vedio_name);
+////            Mat re=flash_dec.result_pic.clone();
 
-            s_server.savefault(mes,mc->srcrgb,mc->srcir,re);
-            s_server.send_decinf(3,mes,mc->srcrgb,mc->srcir,re,vedio_name);
-            continue;
-        }
-        if(TEST)
-        {
-            cout<<"Result_flash: "<<Result_flash<<endl;
-            if(Result_flash)
-            {
-                Mat re=flash_dec.result_pic;
-                imshow("Result_flash",re);
-            }
-        }
+////            s_server.savefault(mes,mc->srcrgb,mc->srcir,re);
+////            s_server.send_decinf(3,mes,mc->srcrgb,mc->srcir,re,vedio_name);
+////            continue;
+////        }
+////        if(TEST)
+////        {
+////            cout<<"Result_flash: "<<Result_flash<<endl;
+////            if(Result_flash)
+////            {
+////                Mat re=flash_dec.result_pic;
+////                imshow("Result_flash",re);
+////            }
+////        }
 
-//        //过热检测
-//        int Result_heat = heat_dec.detect();
-//        if(Result_heat)
-//        {
-//            state_mes mes;
-//            mes.settime_now();
-//            record_time begin(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec-1);
-//            record_time end(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec+1);
+//////        //过热检测
+//////        int Result_heat = heat_dec.detect();
+//////        if(Result_heat)
+//////        {
+//////            state_mes mes;
+//////            mes.settime_now();
+//////            record_time begin(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec-1);
+//////            record_time end(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec+1);
 
-//            string vedio_name=mes.tostring();
-//            string command = "mkdir -p " + s_server.getbasefile() +  vedio_name;
-//            system(command.c_str());
-//            vedio_name= s_server.getbasefile() + vedio_name+"/"+vedio_name+"_vedio.mp4";
+//////            string vedio_name=mes.tostring();
+//////            string command = "mkdir -p " + s_server.getbasefile() +  vedio_name;
+//////            system(command.c_str());
+//////            vedio_name= s_server.getbasefile() + vedio_name+"/"+vedio_name+"_vedio.mp4";
 
-//            mc->Vedio_record(begin,end,1,vedio_name);
-//            Mat re=heat_dec.result_pic.clone();
+//////            mc->Vedio_record(begin,end,1,vedio_name);
+//////            Mat re=heat_dec.result_pic.clone();
 
-//            s_server.savefault(mes,mc->srcrgb,re,mc->srcuv);
-//            s_server.send_decinf(3,mes,mc->srcrgb,re,mc->srcuv,vedio_name);
-//            continue;
-//        }
-//        if(TEST)
-//        {
-//            cout<<"Result_heat: "<<Result_heat<<endl;
-//            if(Result_heat)
-//            {
-//                Mat re=heat_dec.result_pic;
-//                imshow("Result_heat",re);
-//            }
-//        }
+//////            s_server.savefault(mes,mc->srcrgb,re,mc->srcuv);
+//////            s_server.send_decinf(3,mes,mc->srcrgb,re,mc->srcuv,vedio_name);
+//////            continue;
+//////        }
+//////        if(TEST)
+//////        {
+//////            cout<<"Result_heat: "<<Result_heat<<endl;
+//////            if(Result_heat)
+//////            {
+//////                Mat re=heat_dec.result_pic;
+//////                imshow("Result_heat",re);
+//////            }
+//////        }
 
 
 
-//        //渗水检测
-//        int Result_water = water_dec.detect();
-//        if(Result_water)
-//        {
-//            state_mes mes;
-//            mes.settime_now();
-//            record_time begin(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec-1);
-//            record_time end(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec+1);
+//////        //渗水检测
+//////        int Result_water = water_dec.detect();
+//////        if(Result_water)
+//////        {
+//////            state_mes mes;
+//////            mes.settime_now();
+//////            record_time begin(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec-1);
+//////            record_time end(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec+1);
 
-//            string vedio_name=mes.tostring();
-//            string command = "mkdir -p " + s_server.getbasefile() +  vedio_name;
-//            system(command.c_str());
-//            vedio_name= s_server.getbasefile() + vedio_name+"/"+vedio_name+"_vedio.mp4";
+//////            string vedio_name=mes.tostring();
+//////            string command = "mkdir -p " + s_server.getbasefile() +  vedio_name;
+//////            system(command.c_str());
+//////            vedio_name= s_server.getbasefile() + vedio_name+"/"+vedio_name+"_vedio.mp4";
 
-//            mc->Vedio_record(begin,end,1,vedio_name);
-//            Mat re=water_dec.result_pic.clone();
+//////            mc->Vedio_record(begin,end,1,vedio_name);
+//////            Mat re=water_dec.result_pic.clone();
 
-//            s_server.savefault(mes,mc->srcrgb,re,mc->srcuv);
-//            s_server.send_decinf(3,mes,mc->srcrgb,re,mc->srcuv,vedio_name);
-//            continue;
-//        }
-//        if(TEST)
-//        {
-//            cout<<"Result_water: "<<Result_water<<endl;
-//            if(Result_water)
-//            {
-//                Mat re=water_dec.result_pic;
-//                imshow("Result_water",re);
-//            }
-//        }
+//////            s_server.savefault(mes,mc->srcrgb,re,mc->srcuv);
+//////            s_server.send_decinf(3,mes,mc->srcrgb,re,mc->srcuv,vedio_name);
+//////            continue;
+//////        }
+//////        if(TEST)
+//////        {
+//////            cout<<"Result_water: "<<Result_water<<endl;
+//////            if(Result_water)
+//////            {
+//////                Mat re=water_dec.result_pic;
+//////                imshow("Result_water",re);
+//////            }
+//////        }
 
-        //保存实时数据，用作实验分析。
-        //s_server.saveaf(mc->srcrgb,mc->srcir,mc->srcuv,counter(),heat_dec.s_contour,flash_dec.s_contour);
-    }
-    /************************** Part three end   ******************************************/
+//////        //保存实时数据，用作实验分析。
+//////        //s_server.saveaf(mc->srcrgb,mc->srcir,mc->srcuv,counter(),heat_dec.s_contour,flash_dec.s_contour);
+////    }
+////    /************************** Part three end   ******************************************/
 
 
 

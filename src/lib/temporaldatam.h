@@ -171,6 +171,7 @@ private:
 	Point culkeyofc(const vector<Point> &p) const;							//计算一个闭合轮廓的key
 };
 
+//库提供的基本特征，用户还可以自行扩张。
 vector<double> f_area(const vector<Point> &);				//面积
 vector<double> f_perimeter(const vector<Point> &);			//周长
 vector<double> f_circle(const vector<Point> &);				//似圆度

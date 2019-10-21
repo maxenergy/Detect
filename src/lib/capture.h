@@ -50,68 +50,7 @@ struct record_time
 
     record_time(int iyear,int imonth, int iday, int ihour,int imin, int isec)
     {
-
-        year=iyear;
-        month=imonth;
-        day=iday;
-        hour=ihour;
-        min=imin;
-        sec=isec;
-
-        if(iyear>2000 && iyear<3000&&imonth>0 && imonth<13&&iday>0 && iday<32&&ihour>=0 && ihour<24&&imin>=0 && imin<60&&isec>=0 && isec<60)
-            return;
-
-        while(true)
-        {
-            if(iyear>2000 && iyear<3000&&imonth>0 && imonth<13&&iday>0 && iday<32&&ihour>=0 && ihour<25&&imin>=0 && imin<61&&isec>=0 && isec<61)
-                break;
-            if(isec>59)
-            {
-                isec-=60;
-                imin+=1;
-            }
-            if(isec<0)
-            {
-                isec+=60;
-                imin-=1;
-            }
-
-            if(imin>59)
-            {
-                imin-=60;
-                ihour+=1;
-            }
-            if(imin<0)
-            {
-                imin+=60;
-                ihour-=1;
-            }
-
-            if(ihour>24)
-            {
-                ihour-=24;
-                iday+=1;
-            }
-            if(ihour<0)
-            {
-                ihour+=24;
-                iday-=1;
-            }
-
-        }
-
-        if(iyear>2000 && iyear<3000&&imonth>0 && imonth<13&&iday>0 && iday<32&&ihour>=0 && ihour<24&&imin>=0 && imin<60&&isec>=0 && isec<60)
-            return;
-        else
-        {
-            year=0;
-            month=0;
-            day=0;
-            hour=0;
-            min=0;
-            sec=0;
-        }
-
+        set(iyear, imonth,  iday,  ihour, imin,  isec);
     }
 
     record_time(const tm *p)
@@ -149,6 +88,7 @@ struct record_time
         else
             return false;
     }
+
     void set(int iyear,int imonth, int iday, int ihour,int imin, int isec)
     {
         year=iyear;
@@ -158,52 +98,44 @@ struct record_time
         min=imin;
         sec=isec;
 
-        if(iyear>2000 && iyear<3000&&imonth>0 && imonth<13&&iday>0 && iday<32&&iday>0 && iday<32&&ihour>=0 && ihour<24&&imin>=0 && imin<60&&isec>=0 && isec<60)
+        if(iyear>2000 && iyear<3000 && imonth>0 && imonth<13 && iday>0 && iday<32 && ihour>=0 && ihour<24 && imin>=0 && imin<60 && isec>=0 && isec<60)
             return;
 
-        while(true)
-        {
-            if(iyear>2000 && iyear<3000&&imonth>0 && imonth<13&&iday>0 && iday<32&&iday>0 && iday<32&&ihour>=0 && ihour<25&&imin>=0 && imin<61&&isec>=0 && isec<61)
+        while(true){
+            if(iyear>2000 && iyear<3000 && imonth>0 && imonth<13 && iday>0 && iday<32 && ihour>=0 && ihour<24 && imin>=0 && imin<60 && isec>=0 && isec<60)
                 break;
-            if(isec>59)
-            {
+            if(isec>59){
                 isec-=60;
                 imin+=1;
             }
-            if(isec<0)
-            {
+            if(isec<0){
                 isec+=60;
                 imin-=1;
             }
 
-            if(imin>59)
-            {
+            if(imin>59){
                 imin-=60;
                 ihour+=1;
             }
-            if(imin<0)
-            {
+            if(imin<0){
                 imin+=60;
                 ihour-=1;
             }
 
-            if(ihour>24)
-            {
+            if(ihour>23){
                 ihour-=24;
                 iday+=1;
             }
-            if(ihour<0)
-            {
+            if(ihour<0){
                 ihour+=24;
                 iday-=1;
             }
 
         }
 
-        if(iyear>2000 && iyear<3000&&imonth>0 && imonth<13&&iday>0 && iday<32&&iday>0 && iday<32&&ihour>=0 && ihour<24&&imin>=0 && imin<60&&isec>=0 && isec<60)
+        if(iyear>2000 && iyear<3000 && imonth>0 && imonth<13 && iday>0 && iday<32 && ihour>=0 && ihour<24 && imin>=0 && imin<60 && isec>=0 && isec<60)
             return;
-        else
-        {
+        else{
             year=0;
             month=0;
             day=0;
@@ -212,6 +144,7 @@ struct record_time
             sec=0;
         }
     }
+
     int year;
     int month;
     int day;
@@ -226,8 +159,13 @@ public:
     Mat srcrgb;
     Mat srcir;
     Mat srcuv;
-    BYTE * tmdata ;
-    unsigned long tmdata_size ;
+
+    NET_DEV_RAWFILEHEAD cm_RawHead;
+    BYTE * cm_pData ;
+    unsigned long cm_dwDataSize ;
+    unsigned char *cpTempPara;
+    unsigned long cTempParaSize;
+
 
     //初始化
     void SDK_Init();
@@ -287,22 +225,8 @@ public:
     Mat getframe();
 
     //lock
-    void lock();//            state_mes mes;
-    //            mes.settime_now();
-    //            record_time begin(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec-1);
-    //            record_time end(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec+1);
-
-    //            string vedio_name=mes.tostring();
-    //            string command = "mkdir -p " + vedio_name;
-    //            system(command.c_str());
-
-    //            Mat re=heat_dec.result.clone();
-
-    //            vedio_name=vedio_name+"/"+vedio_name+"_rgb.mp4";
-    //            mc->Vedio_record(begin,end,1,vedio_name);
-
-    //            s_server.send_decinf(mes,mc->srcrgb,re,mc->srcuv,vedio_name);
-    //unlocdk
+    void lock();
+    //unlock
     void unlock();
 };
 
@@ -311,11 +235,9 @@ class basedec
 public:
     basedec()
     {
-
     }
     virtual ~basedec()
     {
-
     }
     double **Graytodigit(Mat inputMat, double tmax, double tmin);			//将红外图像转化为数据表。
     double gettdev(Mat src,Point point);
@@ -328,14 +250,15 @@ public:
     virtual int faultdetect();
 
 
+    vector<pair<Vec3b, double>> mapoft;         //温度对照表
+    unsigned short *digitdata;                  //温度图
+
     Mat src;									//读入的源图片
     Mat gray;									//源图片的灰度图
     Mat TH;										//原图片的二值图
-    Mat result_pic;                                 //原图片的二值图
+    Mat result_pic;                             //result picture
     vector<vector<Point>> contours;				//对二值图边缘检测的结果
     vector<vector<Point>> s_contour;			//可疑区域
-    vector<pair<Vec3b, double>> mapoft;
-    unsigned short *digitdata;							//温度图
     int failure_alarm_flag;						//故障标志位
 
 };

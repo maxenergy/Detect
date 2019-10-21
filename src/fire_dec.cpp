@@ -3,7 +3,7 @@
 int fire_dec::detect()
 {
     src = mycapture->srcir;
-    digitdata=(unsigned short *)mycapture->tmdata;
+    digitdata=(unsigned short *)mycapture->cm_pData;
     if (!src.empty())
 	{
 		suspiciousconf conf(0, 0, 50, 200, 0, 60);

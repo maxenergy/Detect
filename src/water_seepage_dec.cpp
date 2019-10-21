@@ -4,7 +4,7 @@
 int water_seepage_dec::detect()
 {
     src = mycapture->srcir;
-    digitdata=(unsigned short *)mycapture->tmdata;
+    digitdata=(unsigned short *)mycapture->cm_pData;
 
     if (!src.empty())
 	{
@@ -75,8 +75,9 @@ void water_seepage_dec::dec_w(WORD *inputData, vector<vector<Point>> &suspicious
 	vector<vector<Point>> water_are;
 	for (size_t i = 0; i < suspicious_contour.size(); i++)
 	{
-        float sumti = 0, numi = 0;
-        float sumto = 0, numo = 0;
+        unsigned long sumti = 0, numi = 0;
+        unsigned long sumto = 0, numo = 0;
+        float avrti,avrto;
 		for (int row = 0; row < src.rows; row++)
 		{
 			for (int col = 0; col < src.cols; col++)
@@ -88,12 +89,12 @@ void water_seepage_dec::dec_w(WORD *inputData, vector<vector<Point>> &suspicious
 				
 				if (Eptr[row][col] == 1)
 				{
-                    sumti += inputData[row*640+col];
+                    sumti += (unsigned short)inputData[row*640+col];
 					++numi;
 				}
 				if (Eptro[row][col] == 1 && Eptri[row][col] == -1)
 				{
-                    sumto += inputData[row*640+col];
+                    sumto += (unsigned short)inputData[row*640+col];
 					++numo;
 				}
 				//if(Eptro[row][col]==1)
@@ -102,10 +103,10 @@ void water_seepage_dec::dec_w(WORD *inputData, vector<vector<Point>> &suspicious
 				//	raw_dist.at<float>(row, col) = 0;
 			}
 		}
-        sumti =  mycapture->Get_tem(sumti / numi);
-        sumto = mycapture->Get_tem(sumto / numo);
+        avrti =  mycapture->Get_tem(sumti / numi);
+        avrto = mycapture->Get_tem(sumto / numo);
 
-        if (sumto > sumti&&sumto - sumti > 0.5)   // 0.5为内外温差阈值
+        if (avrto > avrti&&avrto - avrti > 0.5)   // 0.5为内外温差阈值
 		{
 			water_are.push_back(suspicious_contour[i]);
 		}

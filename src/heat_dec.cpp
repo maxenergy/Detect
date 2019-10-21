@@ -44,7 +44,7 @@ void heat_dec::readxml(string filename)
 int heat_dec::detect()
 {
     src=mycapture->srcir;
-    digitdata=(unsigned short *)mycapture->tmdata;
+    digitdata=(unsigned short *)mycapture->cm_pData;
     tenv = 18.3;        //环境温度
 
     if(!src.empty())
@@ -87,15 +87,15 @@ void heat_dec::culate(WORD *inputData,const vector<vector<Point>> &dev_contours)
             //cout << endl;
         }
         //imshow("raw_dist", raw_dist);
-        vector <pair<Point, double>> topk;
+        vector <pair<Point, unsigned short>> topk;
         for (int row = 0; row < src.rows; row++)
             for (int col = 0; col < src.cols; col++)
                 if (Eptr[row][col] == 1)
-                    topk.push_back(pair<Point, double>(Point(col, row), inputData[row*640+col]));
+                    topk.push_back(pair<Point, unsigned short>(Point(col, row), (unsigned short)inputData[row*640+col]));
 
         sort(topk.begin(), topk.end(), [](pair<Point, double> x, pair<Point, double> y) { return x.second > y.second; });
         int nnum = 0;
-        long double Tsum = 0;
+        unsigned long Tsum = 0;
         int nsum = 0;
         Point center;
         for (auto ptr = topk.begin();ptr != topk.end() && nnum < 30;ptr++)
