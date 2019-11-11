@@ -150,22 +150,22 @@ Mat YUV_srcrgb;
 Mat YUV_srcir;
 Mat YUV_srcuv;
 template<class pic>
-inline void setpic(Mat src)
+void setpic(Mat &src)
 {}
 template<>
-inline void setpic<pic_rgb>(Mat src)
+void setpic<pic_rgb>(Mat &src)
 {
     YUV_srcrgb=src.clone();
 }
 template<>
-inline void setpic<pic_ir>(Mat src)
+void setpic<pic_ir>(Mat &src)
 {
-    YUV_srcrgb=src.clone();
+    YUV_srcir=src.clone();
 }
 template<>
-inline void setpic<pic_uv>(Mat src)
+void setpic<pic_uv>(Mat &src)
 {
-    YUV_srcrgb=src.clone();
+    YUV_srcuv=src.clone();
 }
 
 template<class pic>
@@ -178,10 +178,11 @@ void CALLBACK DecCBFun(int nPort, char* pBuf, int nSize, FRAME_INFO* pFrameInfo,
         {
             Mat YUVImage(pFrameInfo->nHeight + pFrameInfo->nHeight / 2, pFrameInfo->nWidth, CV_8UC1, (unsigned char*)pBuf);
             setpic<pic>(YUVImage);
-            //            Mat step;
-            //            cvtColor(YUVImage, step, COLOR_YUV2BGR_YV12);
-            //            imshow("test",step);
-            //            cvWaitKey(10);
+
+            //                        Mat step;
+            //                        cvtColor(YUVImage, step, COLOR_YUV2BGR_YV12);
+            //                        imshow("test",step);
+            //                        cvWaitKey(10);
             YUVImage.~Mat();
         }
         stream_unlock(pic());
@@ -249,6 +250,7 @@ void CALLBACK g_RealDataCallBack_V30(LONG lRealHandle, DWORD dwDataType, BYTE *p
     }
 }
 
+
 NET_DEV_RAWFILEHEAD m_RawHead;
 BYTE * m_pData ;
 unsigned long m_dwDataSize ;
@@ -273,6 +275,11 @@ void CALLBACK funRealStream(int dwDataType, char* pDataBuffer, int dwDataSize,in
         {
             tm_lock();
             Temperature_GetFrameInfo(m_RawHead.nCalcType,(byte*)pDataBuffer,dwDataSize,&m_pData,&m_dwDataSize,&pTempPara,&TempParaSize);
+
+            // test
+            //cout<<"size of data is "<<m_dwDataSize<<endl;
+            //cout<<"original data is "<<((WORD *)m_pData)[240+640*320];
+            //cout<<"tem is "<<Temperature_GetTempFromGray(((WORD *)m_pData)[240+640*320], 0.96, 0, pTempPara,TempParaSize,m_RawHead.nCalcType)<<endl;
             tm_unlock();
         }
         break;
@@ -291,10 +298,10 @@ void capture::SDK_Init()
     //IR
     unsigned char strImageVersion[24] = {0};
     NetDev_GetVersion(strImageVersion);
-    cout<<"IR SDK Version:"<<strImageVersion;
+    cout<<"IR SDK Version:"<<strImageVersion<<endl;
     char strTempVersion[24] = {0};
     TEMPALG_GetVersion(strTempVersion);
-    cout<<"TEM SDK Version:"<<strTempVersion;
+    cout<<"TEM SDK Version:"<<strTempVersion<<endl;
     NetDev_Init();
 
 }
@@ -302,7 +309,7 @@ void capture::SDK_Init()
 bool capture::SDK_Connect()
 {
     NET_DVR_DEVICEINFO_V30 struDeviceInfo;
-    lUserID = NET_DVR_Login_V30("192.0.0.63", 8000, "admin", "123456ABC", &struDeviceInfo);
+    lUserID = NET_DVR_Login_V30("192.168.1.2", 8000, "admin", "asdf1234", &struDeviceInfo);
     if (lUserID < 0)
     {
         printf("Login error, %d\n", NET_DVR_GetLastError());
@@ -313,10 +320,10 @@ bool capture::SDK_Connect()
     NET_DVR_SetExceptionCallBack_V30(0, nullptr,g_ExceptionCallBack, nullptr);
 
     //IR
-    IRUserID=NetDev_Connect("ip",CONNECT_TYPE_ULIRNET);
+    IRUserID=NetDev_Connect("192.168.1.84",CONNECT_TYPE_ULIRNET);
     if(IRUserID==-1)
     {
-        cout<<"IR connect error";
+        cout<<"IR connect error ,id is "<<NetDev_GetLastError()<<endl;
         return false;
     }
 
@@ -327,12 +334,13 @@ bool capture::Vedio_Stream_Set()
 {
     LONG lRealPlayHandle;
     NET_DVR_PREVIEWINFO struPlayInfo = {0};
-    struPlayInfo.hPlayWnd = 0;      //需要 SDK 解码时句柄设为有效值,仅取流不解码时可设为空
+    //struPlayInfo.hPlayWnd = 0;      //需要 SDK 解码时句柄设为有效值,仅取流不解码时可设为空
     struPlayInfo.dwStreamType = 0;  //0-主码流,1-子码流,2-码流 3,3-码流 4,以此类推
     struPlayInfo.dwLinkMode = 0;    //0- TCP 方式,1- UDP 方式,2- 多播方式,3- RTP 方式,4-RTP/RTSP,5-RSTP/HTTP
     struPlayInfo.bBlocked = 1;      //0- 非阻塞取流,1- 阻塞取流
+    struPlayInfo.dwDisplayBufNum = 1;
 
-    struPlayInfo.lChannel = 1;      //预览通道号
+    struPlayInfo.lChannel = 33;      //预览通道号
     lRealPlayHandle = NET_DVR_RealPlay_V40(lUserID, &struPlayInfo, g_RealDataCallBack_V30<pic_rgb>, nullptr);
     if (lRealPlayHandle < 0){
         printf("NET_DVR_RealPlay_V40 port1 error\n");
@@ -341,7 +349,7 @@ bool capture::Vedio_Stream_Set()
         return false;
     }
 
-    struPlayInfo.lChannel = 2;      //预览通道号
+    struPlayInfo.lChannel = 34;      //预览通道号
     lRealPlayHandle = NET_DVR_RealPlay_V40(lUserID, &struPlayInfo, g_RealDataCallBack_V30<pic_ir>, nullptr);
     if (lRealPlayHandle < 0){
         printf("NET_DVR_RealPlay_V40 port2 error\n");
@@ -350,7 +358,7 @@ bool capture::Vedio_Stream_Set()
         return false;
     }
 
-    struPlayInfo.lChannel = 3;      //预览通道号
+    struPlayInfo.lChannel = 35;      //预览通道号
     lRealPlayHandle = NET_DVR_RealPlay_V40(lUserID, &struPlayInfo, g_RealDataCallBack_V30<pic_uv>, nullptr);
     if (lRealPlayHandle < 0){
         printf("NET_DVR_RealPlay_V40 port3 error\n");
@@ -360,21 +368,26 @@ bool capture::Vedio_Stream_Set()
     }
 
     //IR
+    NetDev_SetRealStreamCallBack(IRUserID,funRealStream,(int *)this);
     BOOL ret = NetDev_StartRealStream(IRUserID,STREAM_TYPE_GRAYDATA);
     if(ret == FALSE){
         cout<<"IR:开始获取视频失败"<<endl;
         return false;
     }
-    NetDev_SetRealStreamCallBack(IRUserID,funRealStream,(int *)this);
+
     return true;
 }
 
 void capture::Vedio_Update()
 {
     lock();
-    cvtColor(YUV_srcrgb, srcrgb, COLOR_YUV2BGR_YV12);
-    cvtColor(YUV_srcir, srcir, COLOR_YUV2BGR_YV12);
-    cvtColor(YUV_srcuv, srcuv, COLOR_YUV2BGR_YV12);
+
+    if(!YUV_srcrgb.empty()&&!YUV_srcir.empty()&&!YUV_srcuv.empty())
+    {
+        cvtColor(YUV_srcrgb, srcrgb, COLOR_YUV2BGR_YV12);
+        cvtColor(YUV_srcir, srcir, COLOR_YUV2BGR_YV12);
+        cvtColor(YUV_srcuv, srcuv, COLOR_YUV2BGR_YV12);
+    }
 
     //IR
     cm_RawHead=m_RawHead;
@@ -468,7 +481,7 @@ bool capture::Vedio_record(record_time begin,record_time end,int port,string fil
 void capture::SDK_Close()
 {
     //注销用户
-    NET_DVR_Logout(lUserID);
+    //NET_DVR_Logout(lUserID);
     //释放 SDK 资源
     NET_DVR_Cleanup();
 }
@@ -581,13 +594,17 @@ double basedec::gettdev(Mat src,Point point)
 
 vector<vector<Point>> basedec::get_suspicious_area(Mat src, suspiciousconf conf)
 {
+    int test=false;
     vector<vector<Point>> sv;
 
     //灰度化
     cvtColor(src, gray, CV_BGR2GRAY);
 
-    imshow("src", src);
-    imshow("gray", gray);
+    if(test)
+    {
+        imshow("src", src);
+        imshow("gray", gray);
+    }
 
     //形态学处理
     int g_nStructRlementSize = conf.dandesize;//内核矩阵的尺寸
@@ -603,7 +620,8 @@ vector<vector<Point>> basedec::get_suspicious_area(Mat src, suspiciousconf conf)
         erode(gray, gray, element);
     }
 
-    imshow("g_dstimage", gray);
+    if(test)
+        imshow("g_dstimage", gray);
 
     //增加对比度
     uchar fa = conf.contrast_min;		//<50 black
@@ -628,11 +646,13 @@ vector<vector<Point>> basedec::get_suspicious_area(Mat src, suspiciousconf conf)
     else
         threshold(gray, TH, conf.th, 255, THRESH_BINARY);
 
-    imshow("TH", TH);
+    if(test)
+        imshow("TH", TH);
 
     //查找轮廓
     vector<Vec4i> hierarchy;
     findContours(TH, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
+    if(test)
     cout << "Contours: " << contours.size() << std::endl;
 
     //简单过滤
@@ -656,8 +676,8 @@ vector<vector<Point>> basedec::get_suspicious_area(Mat src, suspiciousconf conf)
     Mat result(TH.size(), CV_8UC3, cv::Scalar(255, 255, 255));
     drawContours(result, contours, -1, cv::Scalar(0, 0, 0), 1);
     drawContours(result, sv, -1, Scalar(0, 0, 255), 1);
-    imshow("re", result);
-    cvWaitKey(0);
+    //if(test)
+        imshow("可疑轮廓", result);
 
     return sv;
 }

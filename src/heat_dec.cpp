@@ -57,8 +57,6 @@ int heat_dec::detect()
 
         failure_alarm_flag=faultdetect();   //检测各个温度特征是否超标
 
-        cout <<"设备状态类型为："<< failure_alarm_flag << endl;
-        cvWaitKey(0);
         return failure_alarm_flag;
     }
     return 0;
@@ -140,6 +138,7 @@ void heat_dec::culate(WORD *inputData,const vector<vector<Point>> &dev_contours)
 int heat_dec::faultdetect()
 {
     cout << endl;
+    result_pic=src.clone();
     for (Tconf itc : tconf)
     {
         for (int n = 0;n < 3;n++)
@@ -171,7 +170,6 @@ int heat_dec::faultdetect()
 
 void heat_dec::drawre(Tconf &tf)
 {
-    result_pic=src.clone();
     Rect rect;
     rect.x=tf.position.x-50;
     rect.y=tf.position.y-50;

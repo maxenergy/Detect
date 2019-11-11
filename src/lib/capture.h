@@ -200,7 +200,9 @@ private:
 
 public:
     capture()
-    {}
+    {
+        SDK_Init();
+    }
     capture(string Filename, int mode):capture_mode(mode)
     {
         if (mode == 0)
@@ -209,7 +211,7 @@ public:
             current_mat = imread(Filename);
         else if (mode==2)
             vcapture.open(Filename);
-        SDK_Init();
+
     }
     ~capture()
     {

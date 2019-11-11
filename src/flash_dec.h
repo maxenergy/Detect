@@ -20,16 +20,20 @@ vector<double> f_num(const vector<Point> &);				//面积
 class flash_dec :public basedec
 {
 public:
-	flash_dec(shared_ptr<capture> mc) : mycapture(mc)
-	{
-        temporalctrl.addf("area", f_num);
-	}
+    flash_dec(shared_ptr<capture> mc) : mycapture(mc),temporalctrl(5,16,1)
+    {
+        //temporalctrl.addf("area", f_num);
+        temporalctrl.ZEROF();
+        temporalctrl.SETF(NUM);
+    }
     int detect();																//返回值：0正常；1疑似渗水
-	int faultdetect();
+    int faultdetect();
 private:
-	shared_ptr<capture> mycapture;
-	temporaldatam temporalctrl;
-	temporaldatam::fstruct f1;
+    shared_ptr<capture> mycapture;
+//    temporaldatam temporalctrl;
+//    temporaldatam::fstruct f1;
+    temporaldatam_v2 temporalctrl;
+    queue<pair<queue<unsigned long>, queue<double>>> f1;
 };
 
 
