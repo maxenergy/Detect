@@ -22,6 +22,7 @@ class flash_dec :public basedec
 public:
     flash_dec(shared_ptr<capture> mc) : mycapture(mc),temporalctrl(5,16,1)
     {
+        logfile.open("log_falsh.txt",ios::trunc);
         //temporalctrl.addf("area", f_num);
         temporalctrl.ZEROF();
         temporalctrl.SETF(NUM);

@@ -5,7 +5,7 @@
 #include "server.h"
 #include <sys/time.h>
 #include <unistd.h>
-#define TEST false
+#define TEST true
 typedef server::counter counter;
 
 int fps();
@@ -74,12 +74,12 @@ int main()
         //s_server.s_connect("39.108.229.151", 8010);
         s_server.s_connect("127.0.0.1", 8010);
         s_server.send_buff_push(login_mes("server", "123456"));
-        s_server.setbasefile("data/");
+        s_server.setbasefile("/home/zxb/data/");
 
             /************** test only begin ******************/
         if(TEST)
             cout<<"Second test"<<endl;
-        int loop=80;
+        int loop=0;
         while(TEST && loop>0)
         {
             loop--;
@@ -103,9 +103,9 @@ int main()
 
         /************************** Part three begin ********************************************/
         //建立检测功能模块
-        //heat_dec heat_dec(mc);
-        //fire_dec fire_dec(mc);
-        //water_seepage_dec water_dec(mc);
+        heat_dec heat_dec(mc);
+        fire_dec fire_dec(mc);
+        water_seepage_dec water_dec(mc);
         flash_dec flash_dec(mc);
 
         //检测流程
@@ -128,6 +128,7 @@ int main()
 //            }
 //            if(Result_fire)
 //            {
+//                cout<<"in"<<endl;
 //                state_mes mes;
 //                mes.settime_now();
 //                record_time begin(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec-1);
@@ -138,7 +139,8 @@ int main()
 //                system(command.c_str());
 //                vedio_name=s_server.getbasefile() + vedio_name+"/"+vedio_name+"_vedio.mp4";
 
-//                mc->Vedio_record(begin,end,1,vedio_name);
+//                if(!mc->Vedio_record(begin,end,34,vedio_name))
+//                    cout<<"record fialed"<<endl;
 //                Mat re=fire_dec.result_pic.clone();
 
 //                s_server.savefault(mes,mc->srcrgb,re,mc->srcuv);
@@ -147,17 +149,16 @@ int main()
 //            }
 
 
-            //放电检测
-            int Result_flash = flash_dec.detect();
-            if( true)
-            {
-                //if(Result_flash==1)
-                    cout<<"Result_flash: "<<Result_flash<<endl;
-                imshow("UV",mc->srcuv);
-                imshow("Result_flash",flash_dec.result_pic);
-
-                cvWaitKey(10);
-            }
+//            //放电检测
+//            int Result_flash = flash_dec.detect();
+//            if( true)
+//            {
+//                //if(Result_flash==1)
+//                    cout<<"Result_flash: "<<Result_flash<<endl;
+//                imshow("UV",mc->srcuv);
+//                imshow("Result_flash",flash_dec.result_pic);
+//                cvWaitKey(10);
+//            }
 
 //            if(Result_flash)
 //            {
@@ -211,14 +212,15 @@ int main()
 
 
 
-//            //渗水检测
-//            int Result_water = water_dec.detect();
-//            if(true)
-//            {
-//                cout<<"Result_water: "<<Result_water<<endl;
-//                imshow("IR",mc->srcir);
-//                imshow("Result_water",water_dec.result_pic);
-//            }
+            //渗水检测
+            int Result_water = water_dec.detect();
+            if(true)
+            {
+                cout<<"Result_water: "<<Result_water<<endl;
+                imshow("IR",mc->srcir);
+                imshow("Result_water",water_dec.result_pic);
+            }
+
 //            if(Result_water)
 //            {
 //                state_mes mes;
@@ -240,8 +242,8 @@ int main()
 //            }
 
 
-    //        //保存实时数据，用作实验分析。
-    //        //s_server.saveaf(mc->srcrgb,mc->srcir,mc->srcuv,counter(),heat_dec.s_contour,flash_dec.s_contour);
+            //保存实时数据，用作实验分析。
+            //s_server.saveaf(mc->srcrgb,mc->srcir,mc->srcuv,counter(),heat_dec.s_contour,flash_dec.s_contour);
             cvWaitKey(10);
         }
         /************************** Part three end   ******************************************/

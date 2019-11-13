@@ -18,22 +18,26 @@ using namespace cv;
 class fire_dec:public basedec
 {
 public:
-	fire_dec(shared_ptr<capture> mc):mycapture(mc)
+        fire_dec(shared_ptr<capture> mc):mycapture(mc),temporalctrl(20,16,1)
 	{
-        temporalctrl.addf("area", f_area);
-        temporalctrl.addf("perimeter", f_perimeter);
-        temporalctrl.addf("circle", f_circle);
-        temporalctrl.addf("cofc", f_cofc);
+            logfile.open("log_fire.txt",ios::trunc);
+            temporalctrl.ZEROF();
+            temporalctrl.SETF(AREA);
+            temporalctrl.SETF(PERIMETER);
+            temporalctrl.SETF(CIRCLE);
+            //temporalctrl.SETF(COC);
+
 	}
     int detect();
     int faultdetect();
 private:
 	shared_ptr<capture> mycapture;
-	temporaldatam temporalctrl{20,1};
-	temporaldatam::fstruct f1;
-	temporaldatam::fstruct f2;
-	temporaldatam::fstruct f3;
-	temporaldatam::fstruct f4;
+
+        temporaldatam_v2 temporalctrl;
+        queue<pair<queue<unsigned long>, queue<double>>> f1;
+        queue<pair<queue<unsigned long>, queue<double>>> f2;
+        queue<pair<queue<unsigned long>, queue<double>>> f3;
+        queue<pair<queue<unsigned long>, queue<double>>> f4;
 
 	
 	

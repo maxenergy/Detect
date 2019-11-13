@@ -17,19 +17,19 @@ using namespace std;
 class water_seepage_dec:public basedec
 {
 public:
-	water_seepage_dec(shared_ptr<capture> mc) :mycapture(mc)
-	{
-        temporalctrl.addf("area", f_area);
-        //temporalctrl.addf("perimeter", f_perimeter);
-        //temporalctrl.addf("circle", f_circle);
-	}
+    water_seepage_dec(shared_ptr<capture> mc) :mycapture(mc),temporalctrl(5,16,1)
+    {
+        logfile.open("log_warter.txt",ios::trunc);
+        temporalctrl.ZEROF();
+        temporalctrl.SETF(AREA);
+    }
     int detect();																//返回值：0正常；1疑似渗水
     void dec_w(WORD *inputData, vector<vector<Point>> &suspicious_contour);	//对可疑区域进行筛选判断
-	int faultdetect();
+    int faultdetect();
 
 private:
-	shared_ptr<capture> mycapture;
-	temporaldatam temporalctrl;
-	temporaldatam::fstruct f1;
+    shared_ptr<capture> mycapture;
+    temporaldatam_v2 temporalctrl;
+    queue<pair<queue<unsigned long>, queue<double>>> f1;
 };
 

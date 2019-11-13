@@ -43,6 +43,7 @@ void heat_dec::readxml(string filename)
 //测试接口，测试主要流程。
 int heat_dec::detect()
 {
+    ++frame_num;
     src=mycapture->srcir;
     digitdata=(unsigned short *)mycapture->cm_pData;
     tenv = 18.3;        //环境温度
@@ -51,13 +52,33 @@ int heat_dec::detect()
     {
         suspiciousconf conf(1, 1, 0, 255, 100, 50);
         s_contour = get_suspicious_area(src, conf);
+        if (s_contour.size()>0)
+            logout=true;
+        else
+            logout=false;
 
+        if(logout)
+        {
+            logfile<<"##### begin detect    ######    <- "<<frame_num<<"\n";
+            logfile<<"s_counter size is: "<<s_contour.size()<<"\n";
+            logfile<<"环境温度为: "<<tenv<<"\n";
+        }
         if (s_contour.size() > 0)
             culate(digitdata, s_contour); //对所有可疑区域，分别计算温度特征
 
         failure_alarm_flag=faultdetect();   //检测各个温度特征是否超标
 
+        if(logout)
+        {
+            logfile<<"result is: "<<failure_alarm_flag<<"\n";
+            logfile<<"##### end detect    #####\n"<<endl;
+        }
         return failure_alarm_flag;
+    }
+    if(logout)
+    {
+        logfile<<"src is empty \n";
+        logfile<<"##### end detect    #####\n"<<endl;
     }
     return 0;
 }
@@ -102,32 +123,26 @@ void heat_dec::culate(WORD *inputData,const vector<vector<Point>> &dev_contours)
             center += ptr->first;
             ++nsum;
         }
-
         if (nsum != 0)
         {
             Tconf tc;
             tc.position = center / nsum;
             tc.tdev = mycapture->Get_tem(Tsum / nsum);
             tc.tother = tenv + 2;
-            cout << "位置为：" << tc.position << endl;
-            cout << "设备温度为：" << tc.tdev << "℃" << endl;
+            logfile << "   位置为：" << tc.position << "\n";
+            logfile << "   设备温度为：" << tc.tdev << "℃" << "\n";
 
 
             tc.temperature_rise = tc.tdev - tenv;
             tc.temperature_difference = tc.tdev - tc.tother;
             tc.relative_temperature_difference = tc.temperature_difference / tc.temperature_rise;
-            cout << "设备温升为：" << tc.temperature_rise << "℃" << endl;
-            cout << "设备温差为：" << tc.temperature_difference << "℃" << endl;
-            cout << "设备相对温差为：" << tc.relative_temperature_difference << endl;
+            logfile << "   设备温升为：" << tc.temperature_rise << "℃" << "\n";
+            logfile << "   设备温差为：" << tc.temperature_difference << "℃" << "\n";
+            logfile << "   设备相对温差为：" << tc.relative_temperature_difference << "\n\n";
 
             tconf.push_back(tc);
         }
     }
-
-//    Mat drawing(TH.size(), CV_8UC3, cv::Scalar(255, 255, 255));
-//    drawContours(drawing, contours, -1, Scalar(0, 0, 0), 1);
-//    drawContours(drawing, dev_contours, -1, Scalar(0, 0, 255), 1);
-//    imshow("result", drawing);
 
     for (int n = 0;n < src.rows;n++)
         delete[] Eptr[n];

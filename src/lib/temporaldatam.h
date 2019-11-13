@@ -178,19 +178,19 @@ private:
 };
 
 //库提供的基本特征，用户还可以自行扩张。
-vector<double> f_area(const vector<Point> &);				//面积
-vector<double> f_perimeter(const vector<Point> &);			//周长
-vector<double> f_circle(const vector<Point> &);				//似圆度
-vector<double> f_cofc(const vector<Point> &);				//边界变化量
+vector<double> f_area(const vector<Point> &);				//  面积
+vector<double> f_perimeter(const vector<Point> &);			//  周长
+vector<double> f_circle(const vector<Point> &);				//  似圆度
+vector<double> f_cofc(const vector<Point> &);				//  边界变化量
 
 class temporaldatam_v2
 {
 public:
-    typedef vector<Point> Counter;		//	轮廓
-    typedef Point Label;				//	轮廓队列的位置
-    typedef unsigned long Timestamp;	//	时间戳
+    typedef vector<Point> Counter;                      //  轮廓
+    typedef Point Label;				//  轮廓队列的位置
+    typedef unsigned long Timestamp;                    //  时间戳
 
-    struct Que							//轮廓队列
+    struct Que						//  轮廓队列
     {
         queue<Counter> counters;
         queue<Timestamp> timestamp;
@@ -209,13 +209,17 @@ public:
     {}
 
     //操作接口
-    void pushCounter(const vector<Counter> &c);		//	向时序特征管理器添加新的轮廓
-    int update();									//	一些更新工作
-    Timestamp gettimestamp_now()						//返回当前时间戳
+    void pushCounter(const vector<Counter> &c);                         //  向时序特征管理器添加新的轮廓
+    int update();							//  一些更新工作
+    void clear()                                                        //  清空队列
+    {
+        que.clear();
+    }
+    Timestamp gettimestamp_now()					//  返回当前时间戳
     {
         return timestamp_now;
     }
-    queue<pair<queue<Timestamp>, queue<double>>> getfeature(char F)			//	返回指定的特征
+    queue<pair<queue<Timestamp>, queue<double>>> getfeature(char F)	//  返回指定的特征
     {
         queue<pair<queue<Timestamp>, queue<double>>> result;
         switch (F)
@@ -271,9 +275,9 @@ private:
     vector<Que> que;				//	队列集合
     Timestamp timestamp_now = 21;
 
-    int qlength;					//	轮廓序列的窗口长度
-    int Hz;							//	采样频率：Hz张图片取一张
-    int Distense;					//	归队距离
+    int qlength;				//	轮廓序列的窗口长度
+    int Hz;					//	采样频率：Hz张图片取一张
+    int Distense;				//	归队距离
     char Features = 0;				//	特征选择
     int nhz = 0;
 

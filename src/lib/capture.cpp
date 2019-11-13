@@ -385,8 +385,11 @@ void capture::Vedio_Update()
     if(!YUV_srcrgb.empty()&&!YUV_srcir.empty()&&!YUV_srcuv.empty())
     {
         cvtColor(YUV_srcrgb, srcrgb, COLOR_YUV2BGR_YV12);
+        resize(srcrgb,srcrgb,Size(640,408));
         cvtColor(YUV_srcir, srcir, COLOR_YUV2BGR_YV12);
+        resize(srcir,srcir,Size(640,408));
         cvtColor(YUV_srcuv, srcuv, COLOR_YUV2BGR_YV12);
+        resize(srcuv,srcuv,Size(640,408));
     }
 
     //IR
@@ -417,8 +420,18 @@ bool capture::Vedio_record(record_time begin,record_time end,int port,string fil
     record_time now(nowTime);
     if(now<end){
         sleep(1);
+        time_t timep;
+        time(&timep);
+        tm *nowTime= localtime(&timep);
+        record_time now(nowTime);
         if(now<end)
+        {
+            cout<<"begin time"<<begin.year<<begin.month<<begin.day<<begin.hour<<begin.min<<begin.sec<<endl;
+            cout<<"now time"<<now.year<<now.month<<now.day<<now.hour<<now.min<<now.sec<<endl;
+            cout<<"end time"<<end.year<<end.month<<end.day<<end.hour<<end.min<<end.sec<<endl;
+
             return false;
+        }
     }
 
 
@@ -440,11 +453,12 @@ bool capture::Vedio_record(record_time begin,record_time end,int port,string fil
     //---------------------------------------
     //按时间下载
     int hPlayback = NET_DVR_GetFileByTime_V40(lUserID,const_cast<char *>(filename.c_str()),&struDownloadCond);
+    //int hPlayback = NET_DVR_GetFileByTime_V40(lUserID,"33.mp4",&struDownloadCond);
 
-
+    cout<<"step 1"<<endl;
     if(hPlayback < 0)
     {
-        printf("Vedio failed,last error %d\n",NET_DVR_GetLastError());
+        cout<<"Vedio failed,last error"<<NET_DVR_GetLastError()<<endl;
         NET_DVR_Logout(lUserID);
         NET_DVR_Cleanup();
         return false;
@@ -453,12 +467,13 @@ bool capture::Vedio_record(record_time begin,record_time end,int port,string fil
     //开始
     if(!NET_DVR_PlayBackControl_V40(hPlayback, NET_DVR_PLAYSTART,NULL, 0, NULL,NULL))
     {
-        printf("play back control failed [%d]\n",NET_DVR_GetLastError());
+        cout<<"play back control failed "<< NET_DVR_GetLastError()<< endl;
         NET_DVR_Logout(lUserID);
         NET_DVR_Cleanup();
         return false;
     }
 
+    cout<<"开始下载录像#####"<<endl;
     int nPos = 0;
     for(nPos = 0; nPos < 100&&nPos>=0; nPos = NET_DVR_GetDownloadPos(hPlayback))
     {
@@ -466,6 +481,7 @@ bool capture::Vedio_record(record_time begin,record_time end,int port,string fil
         usleep(5000);
     }
     cout<<"进度："<<100<<endl;
+    cout<<"下载录像成功#####"<<endl;
 
 
     if(!NET_DVR_StopPlayBack(hPlayback))

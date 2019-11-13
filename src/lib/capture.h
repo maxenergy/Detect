@@ -263,6 +263,9 @@ public:
     vector<vector<Point>> s_contour;			//可疑区域
     int failure_alarm_flag;						//故障标志位
 
+    ofstream logfile;
+    bool logout =false;
+
 };
 
 Point centerofV(const vector<Point> &p);
