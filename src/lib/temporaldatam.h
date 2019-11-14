@@ -277,6 +277,7 @@ private:
 
     int qlength;				//	轮廓序列的窗口长度
     int Hz;					//	采样频率：Hz张图片取一张
+	int hz_cur = 0;
     int Distense;				//	归队距离
     char Features = 0;				//	特征选择
     int nhz = 0;

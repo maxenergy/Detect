@@ -178,9 +178,19 @@ public:
 
     //度温度接口
     //获取（x，y）的灰度值
-    unsigned short getgray(int x,int y);
-    //将灰度值转化为温度
-    float Get_tem(unsigned short nGray);
+    unsigned short getgray(int x,int y)
+	{
+		return ((WORD*)cm_pData)[x + 640 * y];
+	}
+	//将灰度值转化为温度
+    float Get_tem(unsigned short nGray)
+	{
+		return Temperature_GetTempFromGray(nGray, 0.96, 0, cpTempPara, cTempParaSize, cm_RawHead.nCalcType); //返回温度
+	}
+	//获取一个区域的温度信息
+	//	tem_type:   <0 n个点的平均最低温度  0平均温度  >0 n个点的最平均高温度
+	//	area_type： 0精确区域 1粗略外接矩形
+	pair<float,Point> Area_tem(const vector<Point> &counter,char tem_type,char area_type);
 
     //录像接口
     bool Vedio_record(record_time begin,record_time end,int port,string filename);

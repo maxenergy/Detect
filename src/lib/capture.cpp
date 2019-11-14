@@ -407,9 +407,105 @@ void capture::Vedio_Update()
 }
 
 
-float capture::Get_tem(unsigned short nGray)
+pair<float, Point> capture::Area_tem(const vector<Point>& counter, char tem_type, char area_type)
 {
-    return Temperature_GetTempFromGray(nGray, 0.96, 0, cpTempPara,cTempParaSize,cm_RawHead.nCalcType); //返回温度
+	Rect rect = boundingRect(counter);
+	
+	if (area_type == 0)		//	精确区域
+	{
+		bool** Eptr = new bool* [rect.height];
+		for (int n = 0; n < rect.height; n++)
+			Eptr[n] = new bool[rect.width];
+
+		for (int row = rect.y; row < rect.height; row++)
+			for (int col = rect.x; col < rect.width; col++)		// 是否返回距离值，如果是false，1表示在内面，0表示在边界上，-1表示在外部，true返回实际距离,返回数据是double类型
+				Eptr[row][col] = pointPolygonTest(counter, Point2f(col, row), false) == 1;
+		
+		vector <pair<Point, unsigned short>> topk;
+		for (int row = rect.y; row < rect.height; row++)
+			for (int col = rect.x; col < rect.width; col++)
+				if (Eptr[row][col])
+					topk.push_back(pair<Point, unsigned short>(Point(col, row), (unsigned short)cm_pData[row * 640 + col]));
+
+		if (tem_type < 0)
+		{
+			sort(topk.begin(), topk.end(), [](pair<Point, double> x, pair<Point, double> y) { return x.second < y.second; });
+			tem_type = -tem_type;
+		}
+		else if (tem_type > 0)
+		{
+			sort(topk.begin(), topk.end(), [](pair<Point, double> x, pair<Point, double> y) { return x.second > y.second; });
+		}
+
+		unsigned long Tsum = 0;
+		Point peak;
+		int nsum = 0;
+		if (tem_type == 0)
+		{
+			for (auto ptr = topk.begin(); ptr != topk.end(); ptr++)
+			{
+				Tsum += ptr->second;
+				peak += ptr->first;
+				++nsum;
+			}
+		}
+		else
+		{
+			for (auto ptr = topk.begin(); ptr != topk.end() && nsum < tem_type; ptr++)
+			{
+				Tsum += ptr->second;
+				peak += ptr->first;
+				++nsum;
+			}
+		}
+
+		for (int n = 0; n < rect.height; n++)
+			delete[] Eptr[n];
+		delete[] Eptr;
+
+		return pair<float, Point>(Get_tem(Tsum / nsum), peak / nsum);
+	}
+	else					//	外接矩形
+	{
+		vector <pair<Point, unsigned short>> topk;
+		for (int row = rect.y; row < rect.height; row++)
+			for (int col = rect.x; col < rect.width; col++)
+					topk.push_back(pair<Point, unsigned short>(Point(col, row), (unsigned short)cm_pData[row * 640 + col]));
+
+		if (tem_type < 0)
+		{
+			sort(topk.begin(), topk.end(), [](pair<Point, double> x, pair<Point, double> y) { return x.second < y.second; });
+			tem_type = -tem_type;
+		}
+		else if (tem_type > 0)
+		{
+			sort(topk.begin(), topk.end(), [](pair<Point, double> x, pair<Point, double> y) { return x.second > y.second; });
+		}
+
+		unsigned long Tsum = 0;
+		Point peak;
+		int nsum = 0;
+		if (tem_type == 0)
+		{
+			for (auto ptr = topk.begin(); ptr != topk.end(); ptr++)
+			{
+				Tsum += ptr->second;
+				peak += ptr->first;
+				++nsum;
+			}
+		}
+		else
+		{
+			for (auto ptr = topk.begin(); ptr != topk.end() && nsum < tem_type; ptr++)
+			{
+				Tsum += ptr->second;
+				peak += ptr->first;
+				++nsum;
+			}
+		}
+
+		return pair<float, Point>(Get_tem(Tsum / nsum), peak / nsum);
+	}
 }
 
 bool capture::Vedio_record(record_time begin,record_time end,int port,string filename)
@@ -502,10 +598,6 @@ void capture::SDK_Close()
     NET_DVR_Cleanup();
 }
 
-unsigned short capture::getgray(int x,int y)
-{
-    return ((WORD *)cm_pData)[x+640*y];
-}
 
 Point centerofV(const vector<Point> &p)
 {

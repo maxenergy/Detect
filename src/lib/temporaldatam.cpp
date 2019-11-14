@@ -360,6 +360,10 @@ vector<double> f_cofc(const vector<Point> &c)
 
 void temporaldatam_v2::pushCounter(const vector<Counter> & vc)
 {
+	hz_cur = (hz_cur + 1) % Hz;
+	if (hz_cur != 0)
+		return;
+
     for (auto &c : vc)		//循环添加可疑轮廓集合中的每一个轮廓
     {
         int dis = 99999;
