@@ -8,6 +8,16 @@ int fire_dec::detect()
     {
         suspiciousconf conf(0, 0, 50, 200, 0, 60);
         s_contour = get_suspicious_area(src, conf);
+
+		//根据温度筛除低温区域
+		vector<vector<Point>> tmp_contour;
+		for (const vector<Point>& fire_contour : s_contour)
+		{
+			if (mycapture->Area_tem(fire_contour, 25, 1).first > 80)
+				tmp_contour.push_back(fire_contour);
+		}
+		s_contour = tmp_contour;
+
         if (s_contour.size()>0)
             logout=true;
         else

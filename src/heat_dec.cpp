@@ -86,48 +86,53 @@ int heat_dec::detect()
 //计算设备的温度特征值。
 void heat_dec::culate(WORD *inputData,const vector<vector<Point>> &dev_contours)
 {
-    Mat raw_dist = Mat::zeros(src.size(), CV_32FC1);
-    int **Eptr = new int *[src.rows];
-    for (int n = 0;n < src.rows;n++)
-        Eptr[n] = new int[src.cols];
 
-    for (vector<Point> dev_contour : dev_contours)
+    //Mat raw_dist = Mat::zeros(src.size(), CV_32FC1);
+    //int **Eptr = new int *[src.rows];
+    //for (int n = 0;n < src.rows;n++)
+    //    Eptr[n] = new int[src.cols];
+
+    for (const vector<Point> &dev_contour : dev_contours)
     {
-        for (int row = 0; row < src.rows; row++)
-        {
-            for (int col = 0; col < src.cols; col++)
-            {
-                // 是否返回距离值，如果是false，1表示在内面，0表示在边界上，-1表示在外部，true返回实际距离,返回数据是double类型
-                double	dist = pointPolygonTest(dev_contour, Point2f(col, row), false);
-                Eptr[row][col] = dist;
-                //cout << Eptr[row][col] << "	";
-                raw_dist.at<float>(row, col) = static_cast<float>(dist);
-            }
-            //cout << endl;
-        }
-        //imshow("raw_dist", raw_dist);
-        vector <pair<Point, unsigned short>> topk;
-        for (int row = 0; row < src.rows; row++)
-            for (int col = 0; col < src.cols; col++)
-                if (Eptr[row][col] == 1)
-                    topk.push_back(pair<Point, unsigned short>(Point(col, row), (unsigned short)inputData[row*640+col]));
+    //    for (int row = 0; row < src.rows; row++)
+    //    {
+    //        for (int col = 0; col < src.cols; col++)
+    //        {
+    //            // 是否返回距离值，如果是false，1表示在内面，0表示在边界上，-1表示在外部，true返回实际距离,返回数据是double类型
+    //            double	dist = pointPolygonTest(dev_contour, Point2f(col, row), false);
+    //            Eptr[row][col] = dist;
+    //            //cout << Eptr[row][col] << "	";
+    //            raw_dist.at<float>(row, col) = static_cast<float>(dist);
+    //        }
+    //        //cout << endl;
+    //    }
+    //    //imshow("raw_dist", raw_dist);
+    //    vector <pair<Point, unsigned short>> topk;
+    //    for (int row = 0; row < src.rows; row++)
+    //        for (int col = 0; col < src.cols; col++)
+    //            if (Eptr[row][col] == 1)
+    //                topk.push_back(pair<Point, unsigned short>(Point(col, row), (unsigned short)inputData[row*640+col]));
 
-        sort(topk.begin(), topk.end(), [](pair<Point, double> x, pair<Point, double> y) { return x.second > y.second; });
-        int nnum = 0;
-        unsigned long Tsum = 0;
-        int nsum = 0;
-        Point center;
-        for (auto ptr = topk.begin();ptr != topk.end() && nnum < 30;ptr++)
-        {
-            Tsum += ptr->second;
-            center += ptr->first;
-            ++nsum;
-        }
-        if (nsum != 0)
-        {
+    //    sort(topk.begin(), topk.end(), [](pair<Point, double> x, pair<Point, double> y) { return x.second > y.second; });
+    //    int nnum = 0;
+    //    unsigned long Tsum = 0;
+    //    int nsum = 0;
+    //    Point center;
+    //    for (auto ptr = topk.begin();ptr != topk.end() && nnum < 30;ptr++)
+    //    {
+    //        Tsum += ptr->second;
+    //        center += ptr->first;
+    //        ++nsum;
+    //    }
+
+        //if (nsum != 0)
+        //{
             Tconf tc;
-            tc.position = center / nsum;
-            tc.tdev = mycapture->Get_tem(Tsum / nsum);
+            /*tc.position = center / nsum;
+            tc.tdev = mycapture->Get_tem(Tsum / nsum);*/
+			pair<float, Point> step = mycapture->Area_tem(dev_contour, 30, 1);
+			tc.position = step.second;
+			tc.tdev = step.first;
             tc.tother = tenv + 2;
             logfile << "   位置为：" << tc.position << "\n";
             logfile << "   设备温度为：" << tc.tdev << "℃" << "\n";
@@ -141,12 +146,12 @@ void heat_dec::culate(WORD *inputData,const vector<vector<Point>> &dev_contours)
             logfile << "   设备相对温差为：" << tc.relative_temperature_difference << "\n\n";
 
             tconf.push_back(tc);
-        }
+        //}
     }
 
-    for (int n = 0;n < src.rows;n++)
-        delete[] Eptr[n];
-    delete[] Eptr;
+    //for (int n = 0;n < src.rows;n++)
+    //    delete[] Eptr[n];
+    //delete[] Eptr;
 }
 
 //返回值：0正常；1一般缺陷；2严重缺陷；3危机缺陷
