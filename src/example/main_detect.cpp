@@ -118,35 +118,35 @@ int main()
             mc->Vedio_Update();
 
             //检测此帧图像
-//            //明火检测
-//            int Result_fire = fire_dec.detect();
-//            if(true)
-//            {
-//                cout<<"Result_fire: "<<Result_fire<<endl;
-//                imshow("IR",mc->srcir);
-//                imshow("Result_flash",fire_dec.result_pic);
-//            }
-//            if(Result_fire)
-//            {
-//                cout<<"in"<<endl;
-//                state_mes mes;
-//                mes.settime_now();
-//                record_time begin(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec-1);
-//                record_time end(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec+1);
+            //明火检测
+            int Result_fire = fire_dec.detect();
+            if(true)
+            {
+                cout<<"Result_fire: "<<Result_fire<<endl;
+                imshow("IR",mc->srcir);
+                imshow("Result_flash",fire_dec.result_pic);
+            }
+            if(Result_fire)
+            {
+                cout<<"in"<<endl;
+                state_mes mes;
+                mes.settime_now();
+                record_time begin(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec-1);
+                record_time end(mes.year,mes.mon,mes.day,mes.hour,mes.min,mes.sec+1);
 
-//                string vedio_name=mes.tostring();
-//                string command = "mkdir -p " + s_server.getbasefile() + vedio_name;
-//                system(command.c_str());
-//                vedio_name=s_server.getbasefile() + vedio_name+"/"+vedio_name+"_vedio.mp4";
+                string vedio_name=mes.tostring();
+                string command = "mkdir -p " + s_server.getbasefile() + vedio_name;
+                system(command.c_str());
+                vedio_name=s_server.getbasefile() + vedio_name+"/"+vedio_name+"_vedio.mp4";
 
-//                if(!mc->Vedio_record(begin,end,34,vedio_name))
-//                    cout<<"record fialed"<<endl;
-//                Mat re=fire_dec.result_pic.clone();
+                if(!mc->Vedio_record(begin,end,34,vedio_name))
+                    cout<<"record fialed"<<endl;
+                Mat re=fire_dec.result_pic.clone();
 
-//                s_server.savefault(mes,mc->srcrgb,re,mc->srcuv);
-//                s_server.send_decinf(3,mes,mc->srcrgb,re,mc->srcuv,vedio_name);
-//                continue;
-//            }
+                s_server.savefault(mes,mc->srcrgb,re,mc->srcuv);
+                s_server.send_decinf(3,mes,mc->srcrgb,re,mc->srcuv,vedio_name);
+                continue;
+            }
 
 
 //            //放电检测

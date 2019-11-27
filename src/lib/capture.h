@@ -63,7 +63,7 @@ struct record_time
         sec=p->tm_sec;
     }
 
-    bool operator <(const record_time &m)
+    bool operator<(const record_time &m)
     {
         if(year<m.year)
             return true;
@@ -79,6 +79,24 @@ struct record_time
             return true;
         else
             return false;
+    }
+    bool operator<=(const record_time &m)
+    {
+        if(year==m.year && month==m.month && day==m.day && hour==m.hour && min==m.min && sec==m.sec)
+            return true;
+        if(operator<(m))
+            return true;
+        return false;
+    }
+
+    void clear()
+    {
+        year=0;
+        month=0;
+        day=0;
+        hour=0;
+        min=0;
+        sec=0;
     }
 
     bool isempty()
