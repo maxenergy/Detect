@@ -26,11 +26,15 @@ include_directories("./src")
 include_directories("./src/lib")
 include_directories("./src/example")
 include_directories("./sdk64/include")
-include_directories("../socket_connect/lib")
-include_directories("../socket_connect/src/client")
-include_directories("../socket_connect/src/server")
-include_directories("../socket_connect/src/relay_server")
-include_directories("../socket_connect/src/developing")
+include_directories("../Socket_connect_v2/socket_connect_v2")
+include_directories("../Socket_connect_v2/socket_connect_v2/base")
+include_directories("../Socket_connect_v2/socket_connect_v2/systems")
+include_directories("../Socket_connect_v2/socket_connect_v2/types")
+#include_directories("../socket_connect/lib")
+#include_directories("../socket_connect/src/client")
+#include_directories("../socket_connect/src/server")
+#include_directories("../socket_connect/src/relay_server")
+#include_directories("../socket_connect/src/developing")
 
 link_directories(${PROJECT_SOURCE_DIR}/sdk64)
 link_directories(${PROJECT_SOURCE_DIR}/sdk64/HCNetSDKCom)
@@ -41,8 +45,13 @@ add_library(
                 test-lib
                 "./sdk64/include/GetStream.cpp"
                 ${cpp}
-                ../socket_connect/lib/socket_connect.cpp
-                ../socket_connect/src/server/server.cpp
+                ../Socket_connect_v2/socket_connect_v2/socket_connect_v2.cpp
+                ../Socket_connect_v2/socket_connect_v2/base/socket_base.cpp
+                ../Socket_connect_v2/socket_connect_v2/systems/imp.cpp
+                ../Socket_connect_v2/socket_connect_v2/systems/log.cpp
+                ../Socket_connect_v2/socket_connect_v2/types/frame.cpp
+                ../Socket_connect_v2/socket_connect_v2/types/type_base.cpp
+                ../Socket_connect_v2/socket_connect_v2/types/types.cpp
 )
 
 

@@ -12,7 +12,7 @@
 #include <memory>
 #include <queue>
 #include "capture.h"
-#include "socket_connect.h"
+#include "socket_connect_v2.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
@@ -67,7 +67,7 @@ public:
     }
     Timestamp gettimestamp_now()					//  返回当前时间戳
     {
-        return timestamp_now;
+        return timestamp_now-500;
     }
     queue<pair<queue<Timestamp>, queue<double>>> getfeature(char F)	//  返回指定的特征
     {
@@ -123,7 +123,7 @@ public:
 
 private:
     vector<Que> que;				//	队列集合
-    Timestamp timestamp_now = 21;
+    Timestamp timestamp_now = 500;
 
     int qlength;				//	轮廓序列的窗口长度
     int Hz;					//	采样频率：Hz张图片取一张
@@ -210,24 +210,26 @@ private:
 class alarm_ctrl
 {
 public:
-    alarm_ctrl(shared_ptr<capture> mc,int wt):mycapture(mc),wait_time(wt)
-    {}
+	//	capter指针、Server指针、发送等待时间
+    alarm_ctrl(shared_ptr<capture> mc, Server* sv,int wt):mycapture(mc),server(sv),wait_time(wt)
+    {
+		if (wt < 1)
+			cerr << "wait time too short!" << endl;
+	}
     ~alarm_ctrl()
     {}
 
     //更新状态
-    void updata();
+    void update();
     //保存故障信息
-    void savefault(state_mes mes,Mat rgb,Mat ir,Mat uv,string basefile);
+    void save_and_send(State_mes mes,Mat rgb,Mat ir,Mat uv,string basef,int pt);
 
     //清除发送状态
-    void clear()
-    {
-    }
+	void clear();
     //设置硬直时间
-    void setstaytime(int t)
-    {
-    }
+	void setstaytime(int t);
+	//检测是否在硬直时间内
+	bool isstay();
 private:
 
 private:
@@ -239,11 +241,14 @@ private:
     record_time stay_time;
 
     shared_ptr<capture> mycapture;
+	Server* server;
+	string basefile;
     string mesname;
     string rgbname;
     string irname;
     string uvname;
     string vedioname;
+    int port=0;
 };
 
 

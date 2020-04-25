@@ -276,10 +276,6 @@ void CALLBACK funRealStream(int dwDataType, char* pDataBuffer, int dwDataSize,in
             tm_lock();
             Temperature_GetFrameInfo(m_RawHead.nCalcType,(byte*)pDataBuffer,dwDataSize,&m_pData,&m_dwDataSize,&pTempPara,&TempParaSize);
 
-            // test
-            //cout<<"size of data is "<<m_dwDataSize<<endl;
-            //cout<<"original data is "<<((WORD *)m_pData)[240+640*320];
-            //cout<<"tem is "<<Temperature_GetTempFromGray(((WORD *)m_pData)[240+640*320], 0.96, 0, pTempPara,TempParaSize,m_RawHead.nCalcType)<<endl;
             tm_unlock();
         }
         break;
@@ -382,15 +378,44 @@ void capture::Vedio_Update()
 {
     lock();
 
-    if(!YUV_srcrgb.empty()&&!YUV_srcir.empty()&&!YUV_srcuv.empty())
-    {
-        cvtColor(YUV_srcrgb, srcrgb, COLOR_YUV2BGR_YV12);
-        resize(srcrgb,srcrgb,Size(640,408));
-        cvtColor(YUV_srcir, srcir, COLOR_YUV2BGR_YV12);
-        resize(srcir,srcir,Size(640,408));
-        cvtColor(YUV_srcuv, srcuv, COLOR_YUV2BGR_YV12);
-        resize(srcuv,srcuv,Size(640,408));
-    }
+	if (!YUV_srcrgb.empty() && !YUV_srcir.empty() && !YUV_srcuv.empty())
+	{
+		cvtColor(YUV_srcrgb, srcrgb, COLOR_YUV2BGR_YV12);
+        resize(srcrgb, srcrgb, Size(640, 480));
+		cvtColor(YUV_srcir, srcir, COLOR_YUV2BGR_YV12);
+        resize(srcir, srcir, Size(640, 480));
+		cvtColor(YUV_srcuv, srcuv, COLOR_YUV2BGR_YV12);
+        resize(srcuv, srcuv, Size(640, 480));
+		
+		rd_time.settimenow();
+		if (laset_sec < rd_time)
+		{
+			laset_sec = rd_time;
+			if (!record_part_rgb.empty())
+				record_rgb.push_back(pair<record_time, vector<Mat>>(rd_time, record_part_rgb));
+			if (!record_part_ir.empty())
+				record_ir.push_back(pair<record_time, vector<Mat>>(rd_time, record_part_ir));
+			if (!record_part_uv.empty())
+				record_uv.push_back(pair<record_time, vector<Mat>>(rd_time, record_part_uv));
+
+			record_part_rgb.clear();
+			record_part_ir.clear();
+			record_part_uv.clear();
+
+			if (record_rgb.size() > 10)
+				record_rgb.pop_front();
+			if (record_ir.size() > 10)
+				record_ir.pop_front();
+			if (record_uv.size() > 10)
+				record_uv.pop_front();
+		}
+		else
+		{
+			record_part_rgb.push_back(srcrgb);
+			record_part_ir.push_back(srcir);
+			record_part_uv.push_back(srcuv);
+		}
+	}
 
     //IR
     cm_RawHead=m_RawHead;
@@ -410,22 +435,29 @@ void capture::Vedio_Update()
 pair<float, Point> capture::Area_tem(const vector<Point>& counter, char tem_type, char area_type)
 {
 	Rect rect = boundingRect(counter);
-	
+    int conorx=rect.x;
+    int conory=rect.y;
+    int Height=rect.height;
+    int Width=rect.width;
+    int endx=conorx+rect.width;
+    int endy=conory+rect.height;
+    unsigned short * temdata=(unsigned short *)cm_pData;
+
 	if (area_type == 0)		//	精确区域
 	{
-		bool** Eptr = new bool* [rect.height];
-		for (int n = 0; n < rect.height; n++)
-			Eptr[n] = new bool[rect.width];
+        bool** Eptr = new bool* [endy+1];
+        for (int n = 0; n < endy+1; n++)
+            Eptr[n] = new bool[endx+1];
 
-		for (int row = rect.y; row < rect.height; row++)
-			for (int col = rect.x; col < rect.width; col++)		// 是否返回距离值，如果是false，1表示在内面，0表示在边界上，-1表示在外部，true返回实际距离,返回数据是double类型
-				Eptr[row][col] = pointPolygonTest(counter, Point2f(col, row), false) == 1;
+        for (int row = conory; row < endy; row++)
+            for (int col = conorx; col < endx; col++)		// 是否返回距离值，如果是false，1表示在内面，0表示在边界上，-1表示在外部，true返回实际距离,返回数据是double类型
+                Eptr[row][col] = pointPolygonTest(counter, Point2f(col, row), false) == 1;
 		
 		vector <pair<Point, unsigned short>> topk;
-		for (int row = rect.y; row < rect.height; row++)
-			for (int col = rect.x; col < rect.width; col++)
+        for (int row = conory; row < endy; row++)
+            for (int col = conorx; col < endx; col++)
 				if (Eptr[row][col])
-					topk.push_back(pair<Point, unsigned short>(Point(col, row), (unsigned short)cm_pData[row * 640 + col]));
+                    topk.push_back(pair<Point, unsigned short>(Point(col, row), temdata[row *640 + col]));
 
 		if (tem_type < 0)
 		{
@@ -459,19 +491,21 @@ pair<float, Point> capture::Area_tem(const vector<Point>& counter, char tem_type
 			}
 		}
 
-		for (int n = 0; n < rect.height; n++)
+        for (int n = 0; n < endy+1; n++)
 			delete[] Eptr[n];
 		delete[] Eptr;
 
+        if(nsum==0)
+            return pair<float, Point>(0, Point(0,0));
 		return pair<float, Point>(Get_tem(Tsum / nsum), peak / nsum);
 	}
 	else					//	外接矩形
 	{
 		vector <pair<Point, unsigned short>> topk;
-		for (int row = rect.y; row < rect.height; row++)
-			for (int col = rect.x; col < rect.width; col++)
-					topk.push_back(pair<Point, unsigned short>(Point(col, row), (unsigned short)cm_pData[row * 640 + col]));
 
+        for (int row = conory; row < endy; row++)
+            for (int col = conorx; col < endx; col++)
+                    topk.push_back(pair<Point, unsigned short>(Point(col, row), temdata[row * 640 + col]));
 		if (tem_type < 0)
 		{
 			sort(topk.begin(), topk.end(), [](pair<Point, double> x, pair<Point, double> y) { return x.second < y.second; });
@@ -504,32 +538,135 @@ pair<float, Point> capture::Area_tem(const vector<Point>& counter, char tem_type
 			}
 		}
 
-		return pair<float, Point>(Get_tem(Tsum / nsum), peak / nsum);
+        if(nsum==0)
+            return pair<float, Point>(0, Point(0,0));
+        else {
+            return pair<float, Point>(Get_tem(Tsum / nsum), peak / nsum);
+        }
+
 	}
 }
 
-bool capture::Vedio_record(record_time begin,record_time end,int port,string filename)
+void capture::fire_filter(vector<vector<Point>>& counters, float th_top, float th_bottom, char size_top, char size_bottom)
 {
-    time_t timep;
-    time(&timep);
-    tm *nowTime= localtime(&timep);
-    record_time now(nowTime);
-    if(now<end){
-        sleep(1);
-        time_t timep;
-        time(&timep);
-        tm *nowTime= localtime(&timep);
-        record_time now(nowTime);
-        if(now<end)
-        {
-            cout<<"begin time"<<begin.year<<begin.month<<begin.day<<begin.hour<<begin.min<<begin.sec<<endl;
-            cout<<"now time"<<now.year<<now.month<<now.day<<now.hour<<now.min<<now.sec<<endl;
-            cout<<"end time"<<end.year<<end.month<<end.day<<end.hour<<end.min<<end.sec<<endl;
+    Mat result(srcir.size(), CV_8UC1, 255);
 
-            return false;
+    for (auto& counter : counters)
+    {
+        //	根据火焰高温特性，筛选出包含疑似火焰的区域。
+        Rect rect = boundingRect(counter);
+        int conorx = rect.x;
+        int conory = rect.y;
+        int Height = rect.height;
+        int Width = rect.width;
+        int endx = conorx + rect.width;
+        int endy = conory + rect.height;
+        unsigned short* temdata = (unsigned short*)cm_pData;
+
+        vector <pair<Point, unsigned short>> topk;
+
+        for (int row = conory; row < endy; row++)
+            for (int col = conorx; col < endx; col++)
+                topk.push_back(pair<Point, unsigned short>(Point(col, row), temdata[row * 640 + col]));
+
+        sort(topk.begin(), topk.end(), [](pair<Point, double> x, pair<Point, double> y) { return x.second > y.second; });
+
+        unsigned long Tsum = 0;
+        Point peak;
+        int nsum = 0;
+
+        for (auto ptr = topk.begin(); ptr != topk.end() && nsum < size_top; ptr++)
+        {
+            Tsum += ptr->second;
+            peak += ptr->first;
+            ++nsum;
+        }
+
+        if (nsum == 0 || Get_tem(Tsum / nsum) <= th_top)
+            continue;
+
+        //	滤除低温点，并在Mat中标记高温点。
+        int step=0;
+        while (true)
+        {
+            Tsum = 0;
+            nsum = 0;
+
+            for (auto ptr = topk.rbegin()+step; ptr != topk.rend() && nsum < size_bottom; ++ptr)
+            {
+                Tsum += ptr->second;
+                ++nsum;
+            }
+            if (nsum == 0 )
+                break;
+
+            if(Get_tem(Tsum / nsum) > th_bottom)
+            {
+                for(int n = 0 ; n < topk.size() - step ; ++n)
+                    result.at<uchar>(topk[n].first.y,topk[n].first.x) = 0;
+
+                break;
+
+            }
+            else
+                step+=nsum;
+
         }
     }
 
+
+
+    Mat reth;
+    threshold(result, reth, 100, 255, THRESH_BINARY);
+    vector<Vec4i> hierarchy;
+    findContours(reth, counters, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
+
+    //简单过滤
+    vector<vector<Point>> sv;
+    vector<vector<Point>>::const_iterator itContours = counters.begin();
+    for (; itContours != counters.end(); ++itContours)
+    {
+        if (itContours->size() > 25 && itContours->size() < srcir.rows * 2 + srcir.cols * 2 - 20)
+        {
+            sv.push_back(*itContours);
+        }
+    }
+    counters=sv;
+
+
+    imshow("fire filter",result);
+}
+
+
+bool capture::Vedio_record(record_time begin, record_time end, int port, string filename)
+{
+	bool result = false;
+	list<pair<record_time, vector<Mat>>>* ptr = nullptr;
+	if (port == 33)
+		ptr = &record_rgb;
+	else if (port == 34)
+		ptr = &record_ir;
+	else if (port == 35)
+		ptr = &record_uv;
+
+    VideoWriter video(filename, 0x00000021, ptr->front().second.size(), ptr->front().second.front().size());
+	for (auto& i : *ptr)
+	{
+		if (begin <= i.first && i.first <= end)
+		{
+			for (auto& ii : i.second)
+			{
+				video << ii;
+			}
+		}
+	}
+
+	video.release();
+	return false;
+}
+
+bool capture::Vedio_record_nvr(record_time begin,record_time end,int port,string filename)
+{
 
     NET_DVR_PLAYCOND struDownloadCond={0};
     struDownloadCond.dwChannel=port; //通道号
@@ -728,7 +865,7 @@ vector<vector<Point>> basedec::get_suspicious_area(Mat src, suspiciousconf conf)
         erode(gray, gray, element);
     }
 
-    if(test)
+    if(test && conf.dande > 0)
         imshow("g_dstimage", gray);
 
     //增加对比度
@@ -760,21 +897,17 @@ vector<vector<Point>> basedec::get_suspicious_area(Mat src, suspiciousconf conf)
     //查找轮廓
     vector<Vec4i> hierarchy;
     findContours(TH, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
-    if(test)
-    cout << "Contours: " << contours.size() << std::endl;
 
     //简单过滤
     vector<vector<Point>>::const_iterator itContours = contours.begin();
     for (; itContours != contours.end(); ++itContours)
     {
-        //cout << "Size: " << itContours->size() << std::endl;
         if (itContours->size() > conf.minnum && itContours->size() < TH.rows * 2 + TH.cols * 2 - 20)
         {
             Point Pc = centerofV(*itContours);
             if (Pc.x > TH.cols / 5 && Pc.x<4 * TH.cols / 5 && Pc.y>TH.rows / 5 && Pc.y < 4 * TH.rows / 5)
             {
                 sv.push_back(*itContours);
-                //cout << "Size: " << itContours->size() << std::endl;
             }
         }
     }
@@ -794,8 +927,4 @@ int basedec::faultdetect()
 {
     return 0;
 }
-
-
-
-
 

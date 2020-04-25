@@ -3,8 +3,8 @@
 int main()
 {
     shared_ptr<capture> mc = make_shared<capture>("/home/zxb/SRC_C/Detect/testpic/fire/FLIR2102.mp4", 2);
-	fire_dec ob(mc);
-	ob.detect();
+    //fire_dec ob(mc);
+    //ob.detect();
 	//cvWaitKey(0);
 
 	//Mat srcImage = imread("G:\\文档\\研究生毕设\\院自筹项目\\测试图片\\1温度与图像之间的转化\\FLIR2026.jpg");

@@ -2,30 +2,29 @@
 
 int fire_dec::detect()
 {
+	alctrl.update();
     src = mycapture->srcir;
     digitdata=(unsigned short *)mycapture->cm_pData;
     if (!src.empty())
     {
         suspiciousconf conf(0, 0, 50, 200, 0, 60);
         s_contour = get_suspicious_area(src, conf);
+        mycapture->fire_filter(s_contour,35,35,25,16);
 
-		//根据温度筛除低温区域
-		vector<vector<Point>> tmp_contour;
-		for (const vector<Point>& fire_contour : s_contour)
-		{
-			if (mycapture->Area_tem(fire_contour, 25, 1).first > 80)
-				tmp_contour.push_back(fire_contour);
-		}
-		s_contour = tmp_contour;
-
+        Mat resultm(TH.size(), CV_8UC3, cv::Scalar(255, 255, 255));
+        drawContours(resultm, contours, -1, cv::Scalar(0, 0, 0), 1);
+        drawContours(resultm, s_contour, -1, Scalar(0, 0, 255), 1);
+        //if(test)
+            imshow("可疑轮廓2", resultm);
         if (s_contour.size()>0)
             logout=true;
         else
             logout=false;
 
+
         if(logout)
         {
-            logfile<<"##### begin detect    ######    <- "<<temporalctrl.gettimestamp_now()-21<<"\n";
+            logfile<<"##### begin detect    ######    <- "<<temporalctrl.gettimestamp_now()<<"\n";
             logfile<<"s_counter size is: "<<s_contour.size()<<"\n";
         }
         temporalctrl.pushCounter(s_contour);
@@ -37,7 +36,7 @@ int fire_dec::detect()
 
         failure_alarm_flag = faultdetect();
         if(failure_alarm_flag!=0)
-            temporalctrl.clear();
+            ;//temporalctrl.clear();
         if(logout)
         {
             logfile<<"result is: "<<failure_alarm_flag<<"\n";
@@ -50,13 +49,14 @@ int fire_dec::detect()
         logfile<<"src is empty \n";
         logfile<<"##### end detect    #####\n"<<endl;
     }
+	
     return 0;
 }
 
 int fire_dec::faultdetect()
 {
     int result = 0;
-    vector<vector<Point>> pwater;
+	result_counters.clear();
 
     if(logout)
         logfile<<"counters size is: "<<f1.size()<<"\n";
@@ -74,7 +74,7 @@ int fire_dec::faultdetect()
             logfile<<"  index "<<index<<" counter size is "<<t1.size()<<"\n";
         while(!i1.empty())                      //根据面积变化的情况确定是否是明火区域，可能还需要调整
         {
-            double th = 30;
+            double th = 36;
             if (t1.front() != lasttimeid[0] && (i1.front() - last[0] > th || i1.front() - last[0] < -th))
                 ++sum[0];
             lasttimeid[0] = t1.front();
@@ -87,7 +87,7 @@ int fire_dec::faultdetect()
         queue<double> &i2=f2.front().second;
         while(!i2.empty())                      //根据周长变化的情况确定是否是明火区域，可能还需要调整
         {
-            double th = 8;
+            double th = 6;
             if (t2.front() != lasttimeid[1] && (i2.front() - last[1] > th || i2.front() - last[1] < -th))
                 ++sum[1];
             lasttimeid[1] = t2.front();
@@ -100,8 +100,9 @@ int fire_dec::faultdetect()
         queue<double> &i3=f3.front().second;
         while(!i3.empty())                      //根据似圆度变化的情况确定是否是明火区域，可能还需要调整
         {
-            double th = 0.02;
-            if (t3.front() != lasttimeid[2] && (i3.front() - last[2] > th || i3.front() - last[2] < -th))
+           //cout<<"似圆度： "<<i3.front()<<endl;
+            double th = 0.01;
+            if (t3.front() != lasttimeid[2] && i3.front()<0.97 && (i3.front() - last[2] > th || i3.front() - last[2] < -th))
                 ++sum[2];
 
             lasttimeid[2] = t3.front();
@@ -129,10 +130,16 @@ int fire_dec::faultdetect()
         if(logout)
             logfile<<"      sum is: "<<sum[0]<<"  "<<sum[1]<<"  "<<sum[2]<<"  "<<sum[3]<<"\n";
         int th = 3;
-        if (sum[0] > th && sum[1] > th && sum[2] > th )//&& sum[3] > th )			//符合条件，判断发生故障，将最后一个轮廓绘制出来。
+        if (sum[0] >= th && sum[1] >= th-1 && sum[2] >= th )//&& sum[3] > th )			//符合条件，判断发生故障，将最后一个轮廓绘制出来。
         {
-            pwater.push_back(temporalctrl.getlastcounter(index));
-            result = 1;
+            vector<Point> re=temporalctrl.getlastcounter(index);
+            Rect rect = boundingRect(re);
+            if(rect.width<rect.height)
+            {
+                result_counters.push_back(re);
+                result = 1;
+            }
+
         }
 
         index++;
@@ -144,7 +151,7 @@ int fire_dec::faultdetect()
 
 
     result_pic=src.clone();
-    for(auto v : pwater)
+    for(auto v : result_counters)
     {
         Rect rect = boundingRect(v);
         rectangle(result_pic, rect, Scalar(0, 0, 255));

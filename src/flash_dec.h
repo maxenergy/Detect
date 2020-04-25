@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <iomanip>
+#include "socket_connect_v2.h"
 #include "temporaldatam.h"
 #include "capture.h"
 #include <opencv2/core/core.hpp>
@@ -20,7 +21,7 @@ vector<double> f_num(const vector<Point> &);				//面积
 class flash_dec :public basedec
 {
 public:
-    flash_dec(shared_ptr<capture> mc) : mycapture(mc),temporalctrl(5,16,1)
+    flash_dec(shared_ptr<capture> mc, Server* sv) : mycapture(mc), alctrl(mc, sv, 2),temporalctrl(50,25,1)
     {
         logfile.open("log_falsh.txt",ios::trunc);
         //temporalctrl.addf("area", f_num);
@@ -29,8 +30,29 @@ public:
     }
     int detect();																//返回值：0正常；1疑似渗水
     int faultdetect();
+
+    void save_and_send(State_mes mes, Mat rgb, Mat ir, Mat uv, string basef,int pt)
+	{
+        alctrl.save_and_send(mes, rgb, ir, uv, basef, pt);
+	}
+	void clear()
+	{
+		alctrl.clear();
+		temporalctrl.clear();
+	}
+	void setstaytime(int t)
+	{
+		alctrl.setstaytime(t);
+	}
+	bool isstay()
+	{
+		return alctrl.isstay();
+	}
+
 private:
     shared_ptr<capture> mycapture;
+	alarm_ctrl alctrl;
+
 //    temporaldatam temporalctrl;
 //    temporaldatam::fstruct f1;
     temporaldatam_v2 temporalctrl;

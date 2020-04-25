@@ -6,6 +6,8 @@
 #include <fstream>
 #include <iomanip>
 #include "capture.h"
+#include "socket_connect_v2.h"
+#include "temporaldatam.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
@@ -27,9 +29,10 @@ class heat_dec:public basedec
         double temperature_rise;                    //温升：被测设备表面温度和环境温度参照体表面温度之差。
         double temperature_difference;              //温差：不同被测设备或同一被测设备不同部位之间的温度差。
         double relative_temperature_difference;     //相对温差：两个对应测点之间的温差与其中较热点的温升之比的百分数。
+		vector<Point> heat_counter;
     };
 public:
-    heat_dec(shared_ptr<capture> mc) : mycapture(mc)
+	heat_dec(shared_ptr<capture> mc, Server* sv) : mycapture(mc), alctrl(mc, sv, 2)
     {
         logfile.open("log_heat.txt",ios::trunc);
         readxml("/home/zxb/SRC_C/Detect/conf.xml");
@@ -41,8 +44,26 @@ public:
     int faultdetect();											//返回值：0正常；1一般缺陷；2严重缺陷；3危机缺陷
     void drawre(Tconf &tf);
 
+    void save_and_send(State_mes mes, Mat rgb, Mat ir, Mat uv, string basef,int pt)
+	{
+        alctrl.save_and_send(mes, rgb, ir, uv, basef, pt);
+	}
+	void clear()
+	{
+		alctrl.clear();
+	}
+	void setstaytime(int t)
+	{
+		alctrl.setstaytime(t);
+	}
+	bool isstay()
+	{
+		return alctrl.isstay();
+	}
+
 private:
     shared_ptr<capture> mycapture;
+	alarm_ctrl alctrl;
 
     //警报阈值以及标志，三元数组代表三种级别的故障。
     vector<pair<double, double>> tdev_range[3];			//设备温度的警报范围

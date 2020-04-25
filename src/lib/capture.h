@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iomanip>
 #include <map>
+#include <list>
 #include <memory>
 #include <mutex>
 #include "HCNetSDK.h"
@@ -23,6 +24,8 @@ typedef unsigned char byte;
 
 using namespace std;
 using namespace cv;
+
+
 
 struct suspiciousconf
 {
@@ -45,130 +48,142 @@ struct suspiciousconf
 
 struct record_time
 {
-    record_time():year(0),month(0),day(0),hour(0),min(0),sec(0)
-    {}
+	int year;
+	int month;
+	int day;
+	int hour;
+	int min;
+	int sec;
 
-    record_time(int iyear,int imonth, int iday, int ihour,int imin, int isec)
-    {
-        set(iyear, imonth,  iday,  ihour, imin,  isec);
-    }
+	record_time() :year(0), month(0), day(0), hour(0), min(0), sec(0)
+	{}
+	record_time(int iyear, int imonth, int iday, int ihour, int imin, int isec)
+	{
+		set(iyear, imonth, iday, ihour, imin, isec);
+	}
+	record_time(const tm* p)
+	{
+		year = p->tm_year + 1900;
+		month = p->tm_mon + 1;
+		day = p->tm_mday;
+		hour = p->tm_hour;
+		min = p->tm_min;
+		sec = p->tm_sec;
+	}
 
-    record_time(const tm *p)
-    {
-        year=p->tm_year + 1900;
-        month = p->tm_mon + 1;
-        day=p->tm_mday;
-        hour=p->tm_hour;
-        min=p->tm_min;
-        sec=p->tm_sec;
-    }
+	void set(int iyear, int imonth, int iday, int ihour, int imin, int isec)
+	{
+		year = iyear;
+		month = imonth;
+		day = iday;
+		hour = ihour;
+		min = imin;
+		sec = isec;
 
-    bool operator<(const record_time &m)
-    {
-        if(year<m.year)
-            return true;
-        else if(month<m.month)
-            return true;
-        else if(day<m.day)
-            return true;
-        else if(hour<m.hour)
-            return true;
-        else if(min<m.min)
-            return true;
-        else if(sec<m.sec)
-            return true;
-        else
-            return false;
-    }
-    bool operator<=(const record_time &m)
-    {
-        if(year==m.year && month==m.month && day==m.day && hour==m.hour && min==m.min && sec==m.sec)
-            return true;
-        if(operator<(m))
-            return true;
-        return false;
-    }
+		if (year > 2000 && year < 3000 && month>0 && month < 13 && day>0 && day < 32 && hour >= 0 && hour < 24 && min >= 0 && min < 60 && sec >= 0 && sec < 60)
+			return;
 
-    void clear()
-    {
-        year=0;
-        month=0;
-        day=0;
-        hour=0;
-        min=0;
-        sec=0;
-    }
+		while (true) {
+			if (year > 2000 && year < 3000 && month>0 && month < 13 && day>0 && day < 32 && hour >= 0 && hour < 24 && min >= 0 && min < 60 && sec >= 0 && sec < 60)
+				break;
+			if (sec > 59) {
+				sec -= 60;
+				min += 1;
+			}
+			if (sec < 0) {
+				sec += 60;
+				min -= 1;
+			}
 
-    bool isempty()
-    {
-        if(year==0 &&month==0 &&day==0 &&hour==0 &&min==0 && sec==0)
-            return true;
-        else
-            return false;
-    }
+			if (min > 59) {
+				min -= 60;
+				hour += 1;
+			}
+			if (min < 0) {
+				min += 60;
+				hour -= 1;
+			}
 
-    void set(int iyear,int imonth, int iday, int ihour,int imin, int isec)
-    {
-        year=iyear;
-        month=imonth;
-        day=iday;
-        hour=ihour;
-        min=imin;
-        sec=isec;
+			if (hour > 23) {
+				hour -= 24;
+				day += 1;
+			}
+			if (hour < 0) {
+				hour += 24;
+				day -= 1;
+			}
 
-        if(iyear>2000 && iyear<3000 && imonth>0 && imonth<13 && iday>0 && iday<32 && ihour>=0 && ihour<24 && imin>=0 && imin<60 && isec>=0 && isec<60)
-            return;
+		}
 
-        while(true){
-            if(iyear>2000 && iyear<3000 && imonth>0 && imonth<13 && iday>0 && iday<32 && ihour>=0 && ihour<24 && imin>=0 && imin<60 && isec>=0 && isec<60)
-                break;
-            if(isec>59){
-                isec-=60;
-                imin+=1;
-            }
-            if(isec<0){
-                isec+=60;
-                imin-=1;
-            }
+		if (year > 2000 && year < 3000 && month>0 && month < 13 && day>0 && day < 32 && hour >= 0 && hour < 24 && min >= 0 && min < 60 && sec >= 0 && sec < 60)
+			return;
+		else {
+			year = 0;
+			month = 0;
+			day = 0;
+			hour = 0;
+			min = 0;
+			sec = 0;
+		}
+	}
+	void settimenow()
+	{
+		time_t timep;
+		time(&timep);
+		struct tm* nowTime = localtime(&timep);
+		nowTime->tm_year += 1900;
+		nowTime->tm_mon += 1;
+		year = nowTime->tm_year;
+		month = nowTime->tm_mon;
+		day = nowTime->tm_mday;
+		hour = nowTime->tm_hour;
+		min = nowTime->tm_min;
+		sec = nowTime->tm_sec;
+	}
+	void clear()
+	{
+		year = 0;
+		month = 0;
+		day = 0;
+		hour = 0;
+		min = 0;
+		sec = 0;
+	}
+	bool isempty()
+	{
+		if (year == 0 && month == 0 && day == 0 && hour == 0 && min == 0 && sec == 0)
+			return true;
+		else
+			return false;
+	}
 
-            if(imin>59){
-                imin-=60;
-                ihour+=1;
-            }
-            if(imin<0){
-                imin+=60;
-                ihour-=1;
-            }
 
-            if(ihour>23){
-                ihour-=24;
-                iday+=1;
-            }
-            if(ihour<0){
-                ihour+=24;
-                iday-=1;
-            }
+	bool operator<(const record_time& m)
+	{
+		if (year < m.year)
+			return true;
+		else if (month < m.month)
+			return true;
+		else if (day < m.day)
+			return true;
+		else if (hour < m.hour)
+			return true;
+		else if (min < m.min)
+			return true;
+		else if (sec < m.sec)
+			return true;
+		else
+			return false;
+	}
+	bool operator<=(const record_time& m)
+	{
+		if (year == m.year && month == m.month && day == m.day && hour == m.hour && min == m.min && sec == m.sec)
+			return true;
+		if (operator<(m))
+			return true;
+		return false;
+	}
 
-        }
-
-        if(iyear>2000 && iyear<3000 && imonth>0 && imonth<13 && iday>0 && iday<32 && ihour>=0 && ihour<24 && imin>=0 && imin<60 && isec>=0 && isec<60)
-            return;
-        else{
-            year=0;
-            month=0;
-            day=0;
-            hour=0;
-            min=0;
-            sec=0;
-        }
-    }
-
-    int year;
-    int month;
-    int day;
-    int hour;
-    int min;
-    int sec;
 };
 
 class capture
@@ -198,7 +213,7 @@ public:
     //获取（x，y）的灰度值
     unsigned short getgray(int x,int y)
 	{
-		return ((WORD*)cm_pData)[x + 640 * y];
+                return ((WORD*)cm_pData)[x + 640 * y];
 	}
 	//将灰度值转化为温度
     float Get_tem(unsigned short nGray)
@@ -209,12 +224,23 @@ public:
 	//	tem_type:   <0 n个点的平均最低温度  0平均温度  >0 n个点的最平均高温度
 	//	area_type： 0精确区域 1粗略外接矩形
 	pair<float,Point> Area_tem(const vector<Point> &counter,char tem_type,char area_type);
+        void fire_filter(vector<vector<Point>>& counters, float th_top, float th_bottom, char size_top, char size_bottom);
 
     //录像接口
-    bool Vedio_record(record_time begin,record_time end,int port,string filename);
+	bool Vedio_record(record_time begin, record_time end, int port, string filename);
+	bool Vedio_record_nvr(record_time begin, record_time end, int port, string filename);
     //释放资源
     void SDK_Close();
 private:
+	list<pair<record_time, vector<Mat>>> record_rgb;
+	list<pair<record_time, vector<Mat>>> record_ir;
+	list<pair<record_time, vector<Mat>>> record_uv;
+	vector<Mat> record_part_rgb;
+	vector<Mat> record_part_ir;
+	vector<Mat> record_part_uv;
+	record_time rd_time, laset_sec;
+	
+
     int capture_mode;
     ifstream txtfile;		//mode0 : 读取图片序列
     Mat current_mat;		//mode1 : 读取静态图片
@@ -230,6 +256,7 @@ public:
     capture()
     {
         SDK_Init();
+		laset_sec.settimenow();
     }
     capture(string Filename, int mode):capture_mode(mode)
     {
@@ -239,7 +266,7 @@ public:
             current_mat = imread(Filename);
         else if (mode==2)
             vcapture.open(Filename);
-
+		laset_sec.settimenow();
     }
     ~capture()
     {
@@ -287,6 +314,7 @@ public:
     Mat gray;									//源图片的灰度图
     Mat TH;										//原图片的二值图
     Mat result_pic;                             //result picture
+	vector<vector<Point>> result_counters;		//result counters
     vector<vector<Point>> contours;				//对二值图边缘检测的结果
     vector<vector<Point>> s_contour;			//可疑区域
     int failure_alarm_flag;						//故障标志位

@@ -37,20 +37,35 @@ void heat_dec::readxml(string filename)
         ++n;
     }
 
+    for (int n = 0;n < 3;n++)
+    {
+        for (auto i : tdev_range[n])
+            logfile<<"set level "<<n<<"设备温度报警范围： "<<i.first<<" to "<<i.second<<endl;
+        for (auto i : trise_range[n])
+            logfile<<"set level "<<n<<"设备温升报警范围： "<<i.first<<" to "<<i.second<<endl;
+        for (auto i : tdifference_range[n])
+            logfile<<"set level "<<n<<"设备温差报警范围： "<<i.first<<" to "<<i.second<<endl;
+        for (auto i : trd_range[n])
+            logfile<<"set level "<<n<<"设备相对温升报警范围： "<<i.first<<" to "<<i.second<<endl;
+    }
+
     delete Document;
 }
 
 //测试接口，测试主要流程。
 int heat_dec::detect()
 {
+    alctrl.update();
     ++frame_num;
     src=mycapture->srcir;
     digitdata=(unsigned short *)mycapture->cm_pData;
-    tenv = 18.3;        //环境温度
+    tenv = 10;        //环境温度
+    tconf.clear();
+	result_counters.clear();
 
     if(!src.empty())
     {
-        suspiciousconf conf(1, 1, 0, 255, 100, 50);
+        suspiciousconf conf(0, 1, 0, 255, 100, 50);
         s_contour = get_suspicious_area(src, conf);
         if (s_contour.size()>0)
             logout=true;
@@ -87,99 +102,59 @@ int heat_dec::detect()
 void heat_dec::culate(WORD *inputData,const vector<vector<Point>> &dev_contours)
 {
 
-    //Mat raw_dist = Mat::zeros(src.size(), CV_32FC1);
-    //int **Eptr = new int *[src.rows];
-    //for (int n = 0;n < src.rows;n++)
-    //    Eptr[n] = new int[src.cols];
-
     for (const vector<Point> &dev_contour : dev_contours)
     {
-    //    for (int row = 0; row < src.rows; row++)
-    //    {
-    //        for (int col = 0; col < src.cols; col++)
-    //        {
-    //            // 是否返回距离值，如果是false，1表示在内面，0表示在边界上，-1表示在外部，true返回实际距离,返回数据是double类型
-    //            double	dist = pointPolygonTest(dev_contour, Point2f(col, row), false);
-    //            Eptr[row][col] = dist;
-    //            //cout << Eptr[row][col] << "	";
-    //            raw_dist.at<float>(row, col) = static_cast<float>(dist);
-    //        }
-    //        //cout << endl;
-    //    }
-    //    //imshow("raw_dist", raw_dist);
-    //    vector <pair<Point, unsigned short>> topk;
-    //    for (int row = 0; row < src.rows; row++)
-    //        for (int col = 0; col < src.cols; col++)
-    //            if (Eptr[row][col] == 1)
-    //                topk.push_back(pair<Point, unsigned short>(Point(col, row), (unsigned short)inputData[row*640+col]));
 
-    //    sort(topk.begin(), topk.end(), [](pair<Point, double> x, pair<Point, double> y) { return x.second > y.second; });
-    //    int nnum = 0;
-    //    unsigned long Tsum = 0;
-    //    int nsum = 0;
-    //    Point center;
-    //    for (auto ptr = topk.begin();ptr != topk.end() && nnum < 30;ptr++)
-    //    {
-    //        Tsum += ptr->second;
-    //        center += ptr->first;
-    //        ++nsum;
-    //    }
-
-        //if (nsum != 0)
-        //{
-            Tconf tc;
-            /*tc.position = center / nsum;
-            tc.tdev = mycapture->Get_tem(Tsum / nsum);*/
-			pair<float, Point> step = mycapture->Area_tem(dev_contour, 30, 1);
-			tc.position = step.second;
-			tc.tdev = step.first;
-            tc.tother = tenv + 2;
-            logfile << "   位置为：" << tc.position << "\n";
-            logfile << "   设备温度为：" << tc.tdev << "℃" << "\n";
+        Tconf tc;
+        pair<float, Point> step = mycapture->Area_tem(dev_contour, 30, 1);
+        tc.position = step.second;
+        tc.tdev = step.first;
+        tc.tother = tenv + 2;
+        logfile << "   位置为：" << tc.position << "\n";
+        logfile << "   设备温度为：" << tc.tdev << "℃" << "\n";
 
 
-            tc.temperature_rise = tc.tdev - tenv;
-            tc.temperature_difference = tc.tdev - tc.tother;
-            tc.relative_temperature_difference = tc.temperature_difference / tc.temperature_rise;
-            logfile << "   设备温升为：" << tc.temperature_rise << "℃" << "\n";
-            logfile << "   设备温差为：" << tc.temperature_difference << "℃" << "\n";
-            logfile << "   设备相对温差为：" << tc.relative_temperature_difference << "\n\n";
+        tc.temperature_rise = tc.tdev - tenv;
+        tc.temperature_difference = tc.tdev - tc.tother;
+        tc.relative_temperature_difference = tc.temperature_difference / tc.temperature_rise;
+		tc.heat_counter = dev_contour;
+        logfile << "   设备温升为：" << tc.temperature_rise << "℃" << "\n";
+        logfile << "   设备温差为：" << tc.temperature_difference << "℃" << "\n";
+        logfile << "   设备相对温差为：" << tc.relative_temperature_difference << "\n\n";
 
-            tconf.push_back(tc);
-        //}
+        tconf.push_back(tc);
     }
-
-    //for (int n = 0;n < src.rows;n++)
-    //    delete[] Eptr[n];
-    //delete[] Eptr;
 }
 
 //返回值：0正常；1一般缺陷；2严重缺陷；3危机缺陷
 int heat_dec::faultdetect()
 {
-    cout << endl;
     result_pic=src.clone();
     for (Tconf itc : tconf)
     {
-        for (int n = 0;n < 3;n++)
+        for (int n = 2; n >= 0; --n)
         {
             for (auto i : tdev_range[n])
                 if (itc.tdev > i.first && itc.tdev < i.second){
+                    logfile<<"level "<<n+1<<" 设备温度: "<<itc.tdev<<" in "<<i.first<<" to "<<i.second<<endl;
                     drawre(itc);
                     return n + 1;
                 }
             for (auto i : trise_range[n])
                 if (itc.temperature_rise > i.first&&itc.temperature_rise < i.second){
+                    logfile<<"level "<<n+1<<" 设备温升: "<<itc.temperature_rise<<" in "<<i.first<<" to "<<i.second<<endl;
                     drawre(itc);
                     return n + 1;
                 }
             for (auto i : tdifference_range[n])
                 if (itc.temperature_difference > i.first&&itc.temperature_difference < i.second){
+                    logfile<<"level "<<n+1<<" 设备温差: "<<itc.temperature_difference<<" in "<<i.first<<" to "<<i.second<<endl;
                     drawre(itc);
                     return n + 1;
                 }
             for (auto i : trd_range[n])
                 if (itc.relative_temperature_difference > i.first&&itc.relative_temperature_difference < i.second){
+                    logfile<<"level "<<n+1<<" 设备相对温差: "<<itc.relative_temperature_difference<<" in "<<i.first<<" to "<<i.second<<endl;
                     drawre(itc);
                     return n + 1;
                 }
@@ -190,19 +165,21 @@ int heat_dec::faultdetect()
 
 void heat_dec::drawre(Tconf &tf)
 {
-    Rect rect;
-    rect.x=tf.position.x-50;
-    rect.y=tf.position.y-50;
-    rect.width=100;
-    rect.height=100;
-    if(rect.x<=0)
-        rect.x=1;
-    if(rect.x>=640)
-        rect.x=539;
-    if(rect.y<=0)
-        rect.y=1;
-    if(rect.y>=480)
-        rect.y=379;
+    //Rect rect;
+    //rect.x=tf.position.x-50;
+    //rect.y=tf.position.y-50;
+    //rect.width=100;
+    //rect.height=100;
+    //if(rect.x<=0)
+    //    rect.x=1;
+    //if(rect.x>=640)
+    //    rect.x=539;
+    //if(rect.y<=0)
+    //    rect.y=1;
+    //if(rect.y>=480)
+    //    rect.y=379;
+	Rect rect = boundingRect(tf.heat_counter);
+	result_counters.push_back(tf.heat_counter);
     rectangle(result_pic, rect, Scalar(0, 0, 255));
 }
 

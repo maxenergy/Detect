@@ -2,10 +2,11 @@
 
 int flash_dec::detect()
 {
+	alctrl.update();
     src = mycapture->srcuv;
     if (!src.empty())
 	{
-        suspiciousconf conf(3, 4, 50, 200, 0, 50);
+        suspiciousconf conf(3, 10, 50, 200, 0, 50);
 		s_contour=get_suspicious_area(src, conf);
         if (s_contour.size()>0)
             logout=true;
@@ -14,7 +15,7 @@ int flash_dec::detect()
 
         if(logout)
         {
-            logfile<<"##### begin detect    ######    <- "<<temporalctrl.gettimestamp_now()-21<<"\n";
+            logfile<<"##### begin detect    ######    <- "<<temporalctrl.gettimestamp_now()<<"\n";
             logfile<<"s_counter size is: "<<s_contour.size()<<"\n";
         }
 
@@ -44,7 +45,7 @@ int flash_dec::detect()
 int flash_dec::faultdetect()
 {
 	int result = 0;
-	vector<vector<Point>> pwater;
+	result_counters.clear();
 
     if(logout)
         logfile<<"counters size is: "<<f1.size()<<"\n";
@@ -72,51 +73,20 @@ int flash_dec::faultdetect()
 
         if(logout)
             logfile<<"      sum is: "<<sum<<"\n";
-        if(sum>3)
+        if(sum>=2)
         {
-            pwater.push_back(temporalctrl.getlastcounter(index));
+			result_counters.push_back(temporalctrl.getlastcounter(index));
             result = 1;
         }
         index++;
         f1.pop();
     }
 
-//	for (int n = 0;n < f1.size();++n)
-//	{
-//		int sum = 0;
-//		int lasttimeid = -2;
-//		double last = 0;
-
-//        for (auto &i : f1[n])
-//		{
-//			//if (i.first != lasttimeid && (i.second[0] - last > 100 || i.second[0] - last < -100))
-//				++sum;
-//			lasttimeid = i.first;
-//			last = i.second[0];
-//		}
-//		if (sum > 3)
-//		{
-//			vector<vector<Point>> pall = temporalctrl.v_return(n);
-//			vector<Point> vstep;
-//			for (auto &i : pall)
-//			{
-//				if (i.size() != 0)
-//					vstep = i;
-//			}
-//			pwater.push_back(vstep);
-//			result = 1;
-//		}
-//	}
-
-//	Mat drawing(TH.size(), CV_8UC3, cv::Scalar(255, 255, 255));
-//	drawContours(drawing, contours, -1, Scalar(0, 0, 0), 1);
-//	drawContours(drawing, pwater, -1, Scalar(0, 0, 255), 1);
-//	imshow("result", drawing);
 
     result_pic=src.clone();
-    for(auto v : pwater)
+    for(auto v : result_counters)
     {
-        cout<<pwater.size();
+        //cout<<pwater.size();
         Rect rect = boundingRect(v);
         rectangle(result_pic, rect, Scalar(0, 0, 255));
     }

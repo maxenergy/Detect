@@ -1,5 +1,8 @@
 #include"temporaldatam.h"
-
+#include <sys/stat.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <sys/time.h>
 /*
 		[[[[[[[		←	pfirst队首（入）
 		[[[[[[[
@@ -212,32 +215,94 @@ temporaldatam_v2::Label temporaldatam_v2::cul_label(const Counter &p) const
 }
 
 
-void alarm_ctrl::updata()
+int remove_dir(const char* dir)
 {
+	char cur_dir[] = ".";
+	char up_dir[] = "..";
+	char dir_name[128];
+	DIR* dirp;
+	struct dirent* dp;
+	struct stat dir_stat;
+
+	// 参数传递进来的目录不存在，直接返回
+	if (0 != access(dir, F_OK)) {
+		return 0;
+	}
+
+	// 获取目录属性失败，返回错误
+	if (0 > stat(dir, &dir_stat)) {
+		perror("get directory stat error");
+		return -1;
+	}
+
+	if (S_ISREG(dir_stat.st_mode)) {	// 普通文件直接删除
+		remove(dir);
+	}
+	else if (S_ISDIR(dir_stat.st_mode)) {	// 目录文件，递归删除目录中内容
+		dirp = opendir(dir);
+		while ((dp = readdir(dirp)) != NULL) {
+			// 忽略 . 和 ..
+			if ((0 == strcmp(cur_dir, dp->d_name)) || (0 == strcmp(up_dir, dp->d_name))) {
+				continue;
+			}
+
+			sprintf(dir_name, "%s/%s", dir, dp->d_name);
+			remove_dir(dir_name);   // 递归调用
+		}
+		closedir(dirp);
+
+		rmdir(dir);		// 删除空目录
+	}
+	else {
+		perror("unknow file type!");
+	}
+
+	return 0;
+}
+
+struct timeval send_wait;
+struct timeval send_end;
+
+void alarm_ctrl::update()
+{
+
     if(alarm_time.isempty())
         return;
-
-    state_mes now;
+    State_mes now;
     now.settime_now();
     record_time cur_time(now.year,now.mon,now.day,now.hour,now.min,now.sec-wait_time);
+    //cout<<"get alarm_time: "<<alarm_time.hour<<"    "<<alarm_time.min<<"    "<<alarm_time.sec<<endl;
+    //cout<<"set cur_time: "<<cur_time.hour<<"    "<<cur_time.min<<"    "<<cur_time.sec<<endl;
 
     if(cur_time<=alarm_time)
         return;
-    state_mes mes;
+    State_mes mes;
     mes.getfromfile(mesname);
+    record_time begin(mes.year, mes.mon, mes.day, mes.hour, mes.min, mes.sec - 1);
+    record_time end(mes.year, mes.mon, mes.day, mes.hour, mes.min, mes.sec + 1);
+    cout<<"record "<<begin.hour<<"  "<<begin.min<<"   "<<begin.sec<<" to "<<end.hour<<"  "<<end.min<<"   "<<end.sec<<endl;
+    mycapture->Vedio_record(begin, end, port, vedioname);
 
+	server->send_pkg(mes, rgbname, irname, uvname, vedioname);
+	alarm_time.clear();
+
+    gettimeofday(&send_end, NULL );
+    double diff=(send_end.tv_sec - send_wait.tv_sec ) + (double)(send_end.tv_usec -send_wait.tv_usec)/1000000;
+    cout<<"use time: "<<diff<<endl;
 }
 
-void alarm_ctrl::savefault(state_mes mes,Mat rgb,Mat ir,Mat uv,string basefile)
+void alarm_ctrl::save_and_send(State_mes mes,Mat rgb,Mat ir,Mat uv,string basef, int pt)
 {
-    state_mes now;
-    now.settime_now();
-    record_time cur_time(now.year,now.mon,now.day,now.hour,now.min,now.sec);
+	record_time cur_time;
+	cur_time.settimenow();
 
     if(cur_time < stay_time || !alarm_time.isempty())
         return;
 
-    alarm_time=cur_time;
+    gettimeofday(&send_wait, NULL );
+
+	basefile = basef;
+	alarm_time.set(mes.year, mes.mon, mes.day, mes.hour, mes.min, mes.sec);
     string filename=mes.tostring();
     string command = "mkdir -p " + basefile + filename;
     system(command.c_str());
@@ -247,6 +312,7 @@ void alarm_ctrl::savefault(state_mes mes,Mat rgb,Mat ir,Mat uv,string basefile)
     irname = basefile + filename+"/"+filename+"_ir.jpg";
     uvname = basefile + filename+"/"+filename+"_uv.jpg";
     vedioname = basefile + filename+"/"+filename+"_vedio.mp4";
+    port=pt;
 
     mes.save(mesname);
     imwrite(rgbname,rgb);
@@ -255,4 +321,43 @@ void alarm_ctrl::savefault(state_mes mes,Mat rgb,Mat ir,Mat uv,string basefile)
 }
 
 
+void alarm_ctrl::clear()
+{
+	if (alarm_time.isempty())
+		return;
+	State_mes mes;
+	mes.getfromfile(mesname);
+	string filename = basefile + mes.tostring();
+	remove_dir(filename.c_str());
 
+	alarm_time.clear();
+	basefile.clear();
+	mesname.clear();
+	rgbname.clear();
+	irname.clear();
+	uvname.clear();
+	vedioname.clear();
+    port=0;
+}
+
+void alarm_ctrl::setstaytime(int t)
+{
+	State_mes now;
+	now.settime_now();
+	stay_time.set(now.year, now.mon, now.day, now.hour, now.min, now.sec + t);
+}
+
+bool alarm_ctrl::isstay()
+{
+	if (stay_time.isempty())
+		return false;
+	else
+	{
+		record_time cur_time;
+		cur_time.settimenow();
+		if (cur_time < stay_time)
+			return true;
+		else
+			return false;
+	}
+}
