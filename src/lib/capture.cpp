@@ -1,4 +1,6 @@
 #include "capture.h"
+#include "fcntl.h"
+#include <pthread.h>
 #include <unistd.h>
 
 mutex keyrgb, keyir, keyuv, keytp;
@@ -6,6 +8,7 @@ bool trgb = true, tir = true, tuv = true, ttp = true;
 struct pic_rgb{};
 struct pic_ir{};
 struct pic_uv{};
+void CALLBACK g_fSerialDataCallBack(LONG lSerialHandle, char *pRecvDataBuffer, DWORD dwBufSize, DWORD dwUser);
 template <class pic>
 inline void stream_lock(pic)
 {}
@@ -308,7 +311,7 @@ bool capture::SDK_Connect()
     lUserID = NET_DVR_Login_V30("192.168.1.2", 8000, "admin", "asdf1234", &struDeviceInfo);
     if (lUserID < 0)
     {
-        printf("Login error, %d\n", NET_DVR_GetLastError());
+        printf("Login nvr error, %d\n", NET_DVR_GetLastError());
         NET_DVR_Cleanup();
         return false;
     }
@@ -320,6 +323,25 @@ bool capture::SDK_Connect()
     if(IRUserID==-1)
     {
         cout<<"IR connect error ,id is "<<NetDev_GetLastError()<<endl;
+        return false;
+    }
+
+    // uv
+    lUserID_UV = NET_DVR_Login_V30("192.168.1.", 8000, "admin", "asdf1234", &struDeviceInfo);
+    if (lUserID_UV < 0)
+    {
+        printf("Login uv error, %d\n", NET_DVR_GetLastError());
+        NET_DVR_Cleanup();
+        return false;
+    }
+        //建立透明通道
+    int iSelSerialIndex = 2; //1:232 串口；2:485 串口
+    lTranHandle = NET_DVR_SerialStart(lUserID_UV, iSelSerialIndex, g_fSerialDataCallBack, lUserID_UV);//设置回调函数获取透传数据
+    if (lTranHandle < 0)
+    {
+        printf("NET_DVR_SerialStart error, %d\n", NET_DVR_GetLastError());
+        NET_DVR_Logout(lUserID_UV);
+        NET_DVR_Cleanup();
         return false;
     }
 
@@ -370,7 +392,13 @@ bool capture::Vedio_Stream_Set()
         cout<<"IR:开始获取视频失败"<<endl;
         return false;
     }
+        // 设置定时获取和保存最高温度的线程
 
+    if(!pthread_create(&timerthid,NULL,rdsavemaxt,this))
+    {
+        cout<<"init rdsavemaxt thread failed!"<<endl;
+        return false;
+    }
     return true;
 }
 
@@ -547,6 +575,25 @@ pair<float, Point> capture::Area_tem(const vector<Point>& counter, char tem_type
 	}
 }
 
+// 485接口返回的环境温度
+static double tenv = 0;
+double capture::Get_envtem()
+{
+    //通过透明通道发送数据
+    LONG lSerialChan = 1;//使用485 时该值有效，从1 开始；232 时设置为0
+    unsigned char szSendBuf[8] = {0x01,0x04,0x01,0x90,0x00,0x01,0x30,0x1B};
+    if (!NET_DVR_SerialSend(lTranHandle, lSerialChan, (char*)szSendBuf, sizeof(szSendBuf)))//szSendBuf 为发送数据的缓冲区
+    {
+        printf("NET_DVR_SerialSend error, %d\n", NET_DVR_GetLastError());
+        NET_DVR_SerialStop(lTranHandle);
+        NET_DVR_Logout(lUserID);
+        NET_DVR_Cleanup();
+        return -999;
+    }
+    sleep(1);
+    return tenv;
+}
+
 void capture::fire_filter(vector<vector<Point>>& counters, float th_top, float th_bottom, char size_top, char size_bottom)
 {
     Mat result(srcir.size(), CV_8UC1, 255);
@@ -637,7 +684,7 @@ void capture::fire_filter(vector<vector<Point>>& counters, float th_top, float t
     imshow("fire filter",result);
 }
 
-
+// 软件方法获取录像
 bool capture::Vedio_record(record_time begin, record_time end, int port, string filename)
 {
 	bool result = false;
@@ -665,6 +712,7 @@ bool capture::Vedio_record(record_time begin, record_time end, int port, string 
 	return false;
 }
 
+// 硬件方法获取录像
 bool capture::Vedio_record_nvr(record_time begin,record_time end,int port,string filename)
 {
 
@@ -727,11 +775,46 @@ bool capture::Vedio_record_nvr(record_time begin,record_time end,int port,string
     return true;
 }
 
+// 定时器定时调用的函数
+void *rdsavemaxt(void *captureptr)
+{
+    capture *ptr = (capture *)captureptr;
+    pthread_detach(pthread_self());
+    while(true)
+    {
+        sleep(60);
+        ptr->_rdsavemaxt();
+    }
+}
+void capture::_rdsavemaxt()
+{
+    int result;
+    int outsize = 0;
+    NetDev_GetConfig(IRUserID,ULIR_MEASURE_GET_MAXTEMP,&result,sizeof(result),&outsize);
+
+    // 此处还需要测试一下outbuf是不是int
+    // 生成当前文件名
+    time_t timep;
+    time(&timep);
+    struct tm* nowTime = localtime(&timep);
+    nowTime->tm_year += 1900;
+    nowTime->tm_mon += 1;
+    string filename = string("/home/zxb/SRC_C/data/Server_plotdata/") + to_string(nowTime->tm_year) + "-" + to_string(nowTime->tm_mon) + "-" +to_string(nowTime->tm_mday);
+    // 打开文件并添加数据,然后关闭
+    int fd = open(filename.c_str(),O_WRONLY|O_CREAT|O_APPEND,S_IRWXU|S_IRWXO|S_IRWXG);
+    string strt =to_string(nowTime->tm_hour + nowTime->tm_min/60.0) + "," + to_string(result) + "\n";
+    write(fd,strt.c_str(),strt.size());
+    close(fd);
+}
+
+
+
 void capture::SDK_Close()
 {
     //注销用户
     //NET_DVR_Logout(lUserID);
     //释放 SDK 资源
+    NET_DVR_SerialStop(lTranHandle);
     NET_DVR_Cleanup();
 }
 
@@ -928,3 +1011,11 @@ int basedec::faultdetect()
     return 0;
 }
 
+//回调透传数据函数的外部实现，获取当前环境温度
+void CALLBACK g_fSerialDataCallBack(LONG lSerialHandle, char *pRecvDataBuffer, DWORD dwBufSize, DWORD dwUser)
+{
+    //…… 处理接收到的透传数据，pRecvDataBuffer 中存放接收到的数据
+    int result = ((unsigned char)pRecvDataBuffer[3])<<8 + (unsigned char)pRecvDataBuffer[4];
+    tenv = (double)result / 10;
+
+}

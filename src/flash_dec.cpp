@@ -22,6 +22,7 @@ int flash_dec::detect()
         temporalctrl.pushCounter(s_contour);
 
         f1 = temporalctrl.getfeature(NUM);
+        f2 = temporalctrl.getfeature(AREA);
 
         failure_alarm_flag = faultdetect();
         if(failure_alarm_flag!=0)
@@ -51,40 +52,61 @@ int flash_dec::faultdetect()
         logfile<<"counters size is: "<<f1.size()<<"\n";
 
     int index=0;
-    while(!f1.empty())
+    while(!f1.empty())          // f1的每一个元素是一个队列
     {
-        int sum = 0;
-        unsigned long lasttimeid = 0;
-        double last = 0;
+        int sum[2] = {0};
+        unsigned long lasttimeid[2] = {0};
+        double last[2] = {0};
 
-        queue<unsigned long> &t=f1.front().first;
-        queue<double> &i=f1.front().second;
+        queue<unsigned long> &t=f1.front().first;       //  时间戳队列
+        queue<double> &i=f1.front().second;             //  特征队列
         if(logout)
             logfile<<"  index "<<index<<" counter size is "<<t.size()<<"\n";
-        while(!i.empty())
-        {
-            if(t.front()!=lasttimeid)
-                ++sum;
-            lasttimeid=t.front();
-            last=1;
-            t.pop();
-            i.pop();
-        }
 
-        if(logout)
-            logfile<<"      sum is: "<<sum<<"\n";
-        if(sum>=2)
+//        while(!i.empty())       // 队列的每一个元素是一个时间点的轮廓，统计符合条件的个数
+//        {
+//            if(t.front()!=lasttimeid[0])
+//                ++sum[0];
+//            lasttimeid[0]=t.front();
+//            last[0]=1;
+//            t.pop();
+//            i.pop();
+//        }
+//        if(logout)
+//            logfile<<"      sum is: "<<sum<<"\n";
+
+//        if(sum>=2)              // 分析结果
+//        {
+//            result_counters.push_back(temporalctrl.getlastcounter(index));
+//            result = 1;
+//        }
+
+        queue<unsigned long> &t2=f2.front().first;       //  时间戳队列
+        queue<double> &i2=f2.front().second;             //  特征队列
+        while(!i2.empty())       // 队列的每一个元素是一个时间点的轮廓，统计符合条件的个数
         {
-			result_counters.push_back(temporalctrl.getlastcounter(index));
+            if(t2.front()!=lasttimeid[1] && t2.front() >= 49)
+                ++sum[1];
+            lasttimeid[1]=t2.front();
+            t2.pop();
+            i2.pop();
+        }
+        if(logout)
+            logfile<<"      sum is: "<<sum[0]<<"  "<<sum[1]<<"\n";
+
+        if(sum[1]>=1)              // 分析结果
+        {
+            result_counters.push_back(temporalctrl.getlastcounter(index));
             result = 1;
         }
+
         index++;
         f1.pop();
     }
 
 
     result_pic=src.clone();
-    for(auto v : result_counters)
+    for(auto &v : result_counters)
     {
         //cout<<pwater.size();
         Rect rect = boundingRect(v);

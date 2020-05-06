@@ -32,7 +32,7 @@ int fire_dec::detect()
         f1 = temporalctrl.getfeature(AREA);
         f2 = temporalctrl.getfeature(PERIMETER);
         f3 = temporalctrl.getfeature(CIRCLE);
-        //f4 = temporalctrl.getfeature(COC);
+        f4 = temporalctrl.getfeature(COC);
 
         failure_alarm_flag = faultdetect();
         if(failure_alarm_flag!=0)
@@ -111,26 +111,46 @@ int fire_dec::faultdetect()
             i3.pop();
         }
 
-        //        queue<unsigned long> &t4=f4.front().first;
-        //        queue<double> &i4=f4.front().second;
-        //        while(!i4.empty())					//根据轮廓描述子变化的情况确定是否是明火区域，可能还需要调整
-        //        {
-        //            double th = 0.02;
-        //            if (t4.front() != lasttimeid[3] && (i4.front() - last[3] > th || i4.front() - last[3] < -th))
-        //                ++sum[3];
+        queue<unsigned long> &t4=f4.front().first;
+        queue<double> &i4=f4.front().second;
+        double lastc[5] = {0};
+        while(!i4.empty())					//根据轮廓描述子变化的情况确定是否是明火区域，可能还需要调整
+        {
+            // get thisc 即本次的dct描述子
+            double test = i4.front();
+            unsigned long long tmpc = *(unsigned long long *)(&test);
+            double thisc[5] = { 0 };
+            for (int n = 0; n < 5; n++)
+            {
+                thisc[4 - n] = (double)tmpc / 1000 - tmpc / 1000;
+                tmpc /= 1000;
+            }
 
-        //            lasttimeid[3] = t4.front();
-        //            last[3] = i4.front();
-        //            t4.pop();
-        //            i4.pop();
-        //        }
+            // 根据计算本次与上次的dct描述子的距离
+            double dctdis = 0;
+            for(int n = 0; n < 5; n++)
+                dctdis += (thisc[n] - lastc[n])*(thisc[n] - lastc[n]);
+            dctdis = sqrt(dctdis);
+
+
+            double th = 0.0;
+            if (t4.front() != lasttimeid[3] && (dctdis > th))
+                ++sum[3];
+
+            lasttimeid[3] = t4.front();
+            last[3] = dctdis;
+            for (int n = 0; n < 5; n++)
+                lastc[n] = thisc[n];
+            t4.pop();
+            i4.pop();
+        }
 
 
 
         if(logout)
             logfile<<"      sum is: "<<sum[0]<<"  "<<sum[1]<<"  "<<sum[2]<<"  "<<sum[3]<<"\n";
         int th = 3;
-        if (sum[0] >= th && sum[1] >= th-1 && sum[2] >= th )//&& sum[3] > th )			//符合条件，判断发生故障，将最后一个轮廓绘制出来。
+        if (sum[0] >= th && sum[1] >= th-1 && sum[2] >= th && sum[3] > th)//&& sum[3] > th )			//符合条件，判断发生故障，将最后一个轮廓绘制出来。
         {
             vector<Point> re=temporalctrl.getlastcounter(index);
             Rect rect = boundingRect(re);
@@ -146,7 +166,7 @@ int fire_dec::faultdetect()
         f1.pop();
         f2.pop();
         f3.pop();
-        //f4.pop();
+        f4.pop();
     }
 
 

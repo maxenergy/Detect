@@ -25,6 +25,8 @@ typedef unsigned char byte;
 using namespace std;
 using namespace cv;
 
+// 读取最高温度，并保存启动例程
+void* rdsavemaxt(void*);
 
 
 struct suspiciousconf
@@ -224,14 +226,21 @@ public:
 	//	tem_type:   <0 n个点的平均最低温度  0平均温度  >0 n个点的最平均高温度
 	//	area_type： 0精确区域 1粗略外接矩形
 	pair<float,Point> Area_tem(const vector<Point> &counter,char tem_type,char area_type);
-        void fire_filter(vector<vector<Point>>& counters, float th_top, float th_bottom, char size_top, char size_bottom);
+    // 读取环境温度,出错时返回-999
+    double Get_envtem();
+
+    void fire_filter(vector<vector<Point>>& counters, float th_top, float th_bottom, char size_top, char size_bottom);
 
     //录像接口
 	bool Vedio_record(record_time begin, record_time end, int port, string filename);
 	bool Vedio_record_nvr(record_time begin, record_time end, int port, string filename);
+
+    // 读取最高温度，并保存
+    void _rdsavemaxt();
     //释放资源
     void SDK_Close();
 private:
+    pthread_t timerthid = 0;
 	list<pair<record_time, vector<Mat>>> record_rgb;
 	list<pair<record_time, vector<Mat>>> record_ir;
 	list<pair<record_time, vector<Mat>>> record_uv;
@@ -249,6 +258,12 @@ private:
     //设备的 user id
     LONG lUserID;
     short IRUserID;
+    LONG lUserID_UV;
+
+    // 485透明通道id
+    LONG lTranHandle;
+
+
 
 
 
@@ -270,6 +285,7 @@ public:
     }
     ~capture()
     {
+        pthread_cancel(timerthid);
         if (capture_mode == 2)
             vcapture.release();
         SDK_Close();
@@ -313,11 +329,13 @@ public:
     Mat src;									//读入的源图片
     Mat gray;									//源图片的灰度图
     Mat TH;										//原图片的二值图
-    Mat result_pic;                             //result picture
-	vector<vector<Point>> result_counters;		//result counters
     vector<vector<Point>> contours;				//对二值图边缘检测的结果
     vector<vector<Point>> s_contour;			//可疑区域
     int failure_alarm_flag;						//故障标志位
+
+    //  result
+    Mat result_pic;                             //result picture
+    vector<vector<Point>> result_counters;		//result counters
 
     ofstream logfile;
     bool logout =false;

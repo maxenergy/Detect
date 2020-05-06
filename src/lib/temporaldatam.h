@@ -27,20 +27,16 @@
 using namespace std;
 using namespace cv;
 
-//库提供的基本特征，用户还可以自行扩张。
-vector<double> f_area(const vector<Point> &);				//  面积
-vector<double> f_perimeter(const vector<Point> &);			//  周长
-vector<double> f_circle(const vector<Point> &);				//  似圆度
-vector<double> f_cofc(const vector<Point> &);				//  边界变化量
+
 
 class temporaldatam_v2
 {
 public:
     typedef vector<Point> Counter;                      //  轮廓
-    typedef Point Label;				//  轮廓队列的位置
+    typedef Point Label;                                //  轮廓队列的位置
     typedef unsigned long Timestamp;                    //  时间戳
 
-    struct Que						//  轮廓队列
+    struct Que                                          //  轮廓队列
     {
         queue<Counter> counters;
         queue<Timestamp> timestamp;
@@ -60,16 +56,16 @@ public:
 
     //操作接口
     void pushCounter(const vector<Counter> &c);                         //  向时序特征管理器添加新的轮廓
-    int update();							//  一些更新工作
+    int update();                                                       //  一些更新工作
     void clear()                                                        //  清空队列
     {
         que.clear();
     }
-    Timestamp gettimestamp_now()					//  返回当前时间戳
+    Timestamp gettimestamp_now()                                        //  返回当前时间戳
     {
         return timestamp_now-500;
     }
-    queue<pair<queue<Timestamp>, queue<double>>> getfeature(char F)	//  返回指定的特征
+    queue<pair<queue<Timestamp>, queue<double>>> getfeature(char F)     //  返回指定的特征
     {
         queue<pair<queue<Timestamp>, queue<double>>> result;
         switch (F)
@@ -99,7 +95,7 @@ public:
         }
         return result;
     }
-    const Counter &getlastcounter(int n)					//	返回指定队列的最后一个轮廓和其时间戳
+    const Counter &getlastcounter(int n)                                //	返回指定队列的最后一个轮廓和其时间戳
     {
         return que[n].counters.back();
     }
@@ -125,10 +121,10 @@ private:
     vector<Que> que;				//	队列集合
     Timestamp timestamp_now = 500;
 
-    int qlength;				//	轮廓序列的窗口长度
-    int Hz;					//	采样频率：Hz张图片取一张
+    int qlength;                    //	轮廓序列的窗口长度
+    int Hz;                         //	采样频率：Hz张图片取一张
 	int hz_cur = 0;
-    int Distense;				//	归队距离
+    int Distense;                   //	归队距离
     char Features = 0;				//	特征选择
     int nhz = 0;
 
@@ -160,8 +156,10 @@ private:
     {
         return 1;
     }
-    double f_cofc(const Counter &c)				//边界变化量
+    double f_cofc(const Counter &c)				//  边界变化量
     {
+        vector<double> result;
+
         vector<double> X;
         vector<double> Y;
 
@@ -184,18 +182,10 @@ private:
         dct(input1, output1);
         dct(input2, output2);
 
-        /*cout << input1.size() << endl;
-        for (int n = 0;n < input1.rows;n++)
-        {
-        double x = input1.at<double>(n, 0);
-        double y = input2.at<double>(n, 0);
-        cout << "(" << x << "," << y << ")	";
-        }*/
-
         double x1 = output1.at<double>(0, 0);
         double y1 = output2.at<double>(0, 0);
         double f1 = sqrt(x1*x1 + y1*y1);
-        for (int n = 0;n < input1.rows && n < 9;n++)
+        for (int n = 0;n < input1.rows && n < 6;n++)
         {
             double x = output1.at<double>(n, 0);
             double y = output2.at<double>(n, 0);
@@ -203,7 +193,11 @@ private:
             //cout << "(" << x << "," << y << ")	";
             //result.push_back(qf);
         }
-        return 0;
+
+        unsigned long long red = 0;
+        for (double qf : result)
+            red = red * 1000 + (int)(qf * 1000);
+        return *((double *)(&red));
     }
 };
 

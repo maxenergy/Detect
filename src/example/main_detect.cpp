@@ -192,6 +192,9 @@ int main()
 
 
 //            //过热检测
+//            Command cmd;
+//            if(s_server.recvbuff_pop(cmd) && cmd.type == 1)
+//                heat_dec.readxml("/home/zxb/SRC_C/Detect/conf.xml");
 //            int Result_heat = heat_dec.detect();
 //            if(true)
 //            {

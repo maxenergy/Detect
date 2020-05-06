@@ -26,7 +26,7 @@ public:
 		temporalctrl.SETF(AREA);
 		temporalctrl.SETF(PERIMETER);
 		temporalctrl.SETF(CIRCLE);
-		//temporalctrl.SETF(COC);
+        temporalctrl.SETF(COC);
 
 	}
 	int detect();

@@ -10,6 +10,15 @@ void heat_dec::readxml(string filename)
         cerr << "无法加载xml文件！" << endl;
         return;
     }
+
+    for (int n = 0;n < 3;n++)
+    {
+        tdev_range[n].clear();
+        trise_range[n].clear();
+        tdifference_range[n].clear();
+        trd_range[n].clear();
+    }
+
     TiXmlElement* RootElement = Document->RootElement();
     TiXmlElement* NextElement = RootElement->FirstChildElement();
 

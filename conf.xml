@@ -1,36 +1,32 @@
-
 <root>
     <level1>
-		<rule type="trise">
-			<floorlimit>50</floorlimit>
-			<uplimit>9999</uplimit>
-		</rule>
-	</level1>
-	
-	<level2>
-		<rule type="tdev">
-			<floorlimit>60</floorlimit>
-			<uplimit>70</uplimit>
-		</rule>
-		
-		<rule type="trd">
-			<floorlimit>2</floorlimit>
-			<uplimit>5</uplimit>
-		</rule>
-		
-	</level2>
-	
-	<level3>
-		<rule type="tdev">
-			<floorlimit>70</floorlimit>
-			<uplimit>80</uplimit>
-		</rule>
-		
-		<rule type="trd">
-			<floorlimit>5</floorlimit>
-			<uplimit>9999</uplimit>
-		</rule>
-		
-	</level3>
-	
+        <rule type="trise">
+            <floorlimit>50.000000</floorlimit>
+            <uplimit>9999.000000</uplimit>
+        </rule>
+        <rule type="tdifference">
+            <floorlimit>60.000000</floorlimit>
+            <uplimit>80.000000</uplimit>
+        </rule>
+    </level1>
+    <level2>
+        <rule type="tdev">
+            <floorlimit>60.000000</floorlimit>
+            <uplimit>70.000000</uplimit>
+        </rule>
+        <rule type="trd">
+            <floorlimit>2.000000</floorlimit>
+            <uplimit>5.000000</uplimit>
+        </rule>
+    </level2>
+    <level3>
+        <rule type="tdev">
+            <floorlimit>70.000000</floorlimit>
+            <uplimit>80.000000</uplimit>
+        </rule>
+        <rule type="trd">
+            <floorlimit>5.000000</floorlimit>
+            <uplimit>9999.000000</uplimit>
+        </rule>
+    </level3>
 </root>

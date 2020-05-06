@@ -27,6 +27,7 @@ public:
         //temporalctrl.addf("area", f_num);
         temporalctrl.ZEROF();
         temporalctrl.SETF(NUM);
+        temporalctrl.SETF(AREA);
     }
     int detect();																//返回值：0正常；1疑似渗水
     int faultdetect();
@@ -53,10 +54,9 @@ private:
     shared_ptr<capture> mycapture;
 	alarm_ctrl alctrl;
 
-//    temporaldatam temporalctrl;
-//    temporaldatam::fstruct f1;
     temporaldatam_v2 temporalctrl;
     queue<pair<queue<unsigned long>, queue<double>>> f1;
+    queue<pair<queue<unsigned long>, queue<double>>> f2;
 };
 
 

@@ -11,6 +11,7 @@ set( lib_SDK
    -lSuperRender
    -ltempsdk
    -lUlirNetDevSDK
+   -pthread
     )
 
 
