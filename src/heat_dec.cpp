@@ -68,7 +68,7 @@ int heat_dec::detect()
     ++frame_num;
     src=mycapture->srcir;
     digitdata=(unsigned short *)mycapture->cm_pData;
-    tenv = 10;        //环境温度
+    tenv = mycapture->Get_envtem();        //环境温度
     tconf.clear();
 	result_counters.clear();
 

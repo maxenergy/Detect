@@ -4,19 +4,19 @@
 #include <fcntl.h>
 #include <sys/time.h>
 /*
-		[[[[[[[		←	pfirst队首（入）
-		[[[[[[[
-		[[[[[[[
-		[[[[[[[
-		[[[[[[[
-		[[[[[[[		←	pend队尾（出）
+        [[[[[[[		←	pfirst队首（入）
+        [[[[[[[
+        [[[[[[[
+        [[[[[[[
+        [[[[[[[
+        [[[[[[[		←	pend队尾（出）
 */
 
 void temporaldatam_v2::pushCounter(const vector<Counter> & vc)
 {
-	hz_cur = (hz_cur + 1) % Hz;
-	if (hz_cur != 0)
-		return;
+    hz_cur = (hz_cur + 1) % Hz;
+    if (hz_cur != 0)
+        return;
 
     for (auto &c : vc)		//循环添加可疑轮廓集合中的每一个轮廓
     {
@@ -37,8 +37,18 @@ void temporaldatam_v2::pushCounter(const vector<Counter> & vc)
 
             newq.counters.push(c);
             newq.timestamp.push(timestamp_now);
+            //            if (ISF(AREA))
+            //                newq.area.push(f_area(c));
             if (ISF(AREA))
-                newq.area.push(f_area(c));
+            {
+                double ar = f_area(c);
+                string name = "area is " + to_string(ar);
+                Mat resultm(480, 640, CV_8UC3, cv::Scalar(255, 255, 255));
+                drawContours(resultm, vc, -1, cv::Scalar(0, 0, 0), 1);
+                imshow(name, resultm);
+                cvWaitKey(1);
+                newq.area.push(ar);
+            }
             if (ISF(PERIMETER))
                 newq.perimeter.push(f_perimeter(c));
             if (ISF(CIRCLE))
@@ -143,47 +153,47 @@ temporaldatam_v2::Label temporaldatam_v2::cul_label(const Counter &p) const
 
 int remove_dir(const char* dir)
 {
-	char cur_dir[] = ".";
-	char up_dir[] = "..";
-	char dir_name[128];
-	DIR* dirp;
-	struct dirent* dp;
-	struct stat dir_stat;
+    char cur_dir[] = ".";
+    char up_dir[] = "..";
+    char dir_name[128];
+    DIR* dirp;
+    struct dirent* dp;
+    struct stat dir_stat;
 
-	// 参数传递进来的目录不存在，直接返回
-	if (0 != access(dir, F_OK)) {
-		return 0;
-	}
+    // 参数传递进来的目录不存在，直接返回
+    if (0 != access(dir, F_OK)) {
+        return 0;
+    }
 
-	// 获取目录属性失败，返回错误
-	if (0 > stat(dir, &dir_stat)) {
-		perror("get directory stat error");
-		return -1;
-	}
+    // 获取目录属性失败，返回错误
+    if (0 > stat(dir, &dir_stat)) {
+        perror("get directory stat error");
+        return -1;
+    }
 
-	if (S_ISREG(dir_stat.st_mode)) {	// 普通文件直接删除
-		remove(dir);
-	}
-	else if (S_ISDIR(dir_stat.st_mode)) {	// 目录文件，递归删除目录中内容
-		dirp = opendir(dir);
-		while ((dp = readdir(dirp)) != NULL) {
-			// 忽略 . 和 ..
-			if ((0 == strcmp(cur_dir, dp->d_name)) || (0 == strcmp(up_dir, dp->d_name))) {
-				continue;
-			}
+    if (S_ISREG(dir_stat.st_mode)) {	// 普通文件直接删除
+        remove(dir);
+    }
+    else if (S_ISDIR(dir_stat.st_mode)) {	// 目录文件，递归删除目录中内容
+        dirp = opendir(dir);
+        while ((dp = readdir(dirp)) != NULL) {
+            // 忽略 . 和 ..
+            if ((0 == strcmp(cur_dir, dp->d_name)) || (0 == strcmp(up_dir, dp->d_name))) {
+                continue;
+            }
 
-			sprintf(dir_name, "%s/%s", dir, dp->d_name);
-			remove_dir(dir_name);   // 递归调用
-		}
-		closedir(dirp);
+            sprintf(dir_name, "%s/%s", dir, dp->d_name);
+            remove_dir(dir_name);   // 递归调用
+        }
+        closedir(dirp);
 
-		rmdir(dir);		// 删除空目录
-	}
-	else {
-		perror("unknow file type!");
-	}
+        rmdir(dir);		// 删除空目录
+    }
+    else {
+        perror("unknow file type!");
+    }
 
-	return 0;
+    return 0;
 }
 
 struct timeval send_wait;
@@ -209,8 +219,8 @@ void alarm_ctrl::update()
     cout<<"record "<<begin.hour<<"  "<<begin.min<<"   "<<begin.sec<<" to "<<end.hour<<"  "<<end.min<<"   "<<end.sec<<endl;
     mycapture->Vedio_record(begin, end, port, vedioname);
 
-	server->send_pkg(mes, rgbname, irname, uvname, vedioname);
-	alarm_time.clear();
+    server->send_pkg(mes, rgbname, irname, uvname, vedioname);
+    alarm_time.clear();
 
     gettimeofday(&send_end, NULL );
     double diff=(send_end.tv_sec - send_wait.tv_sec ) + (double)(send_end.tv_usec -send_wait.tv_usec)/1000000;
@@ -219,16 +229,16 @@ void alarm_ctrl::update()
 
 void alarm_ctrl::save_and_send(State_mes mes,Mat rgb,Mat ir,Mat uv,string basef, int pt)
 {
-	record_time cur_time;
-	cur_time.settimenow();
+    record_time cur_time;
+    cur_time.settimenow();
 
     if(cur_time < stay_time || !alarm_time.isempty())
         return;
 
     gettimeofday(&send_wait, NULL );
 
-	basefile = basef;
-	alarm_time.set(mes.year, mes.mon, mes.day, mes.hour, mes.min, mes.sec);
+    basefile = basef;
+    alarm_time.set(mes.year, mes.mon, mes.day, mes.hour, mes.min, mes.sec);
     string filename=mes.tostring();
     string command = "mkdir -p " + basefile + filename;
     system(command.c_str());
@@ -249,41 +259,41 @@ void alarm_ctrl::save_and_send(State_mes mes,Mat rgb,Mat ir,Mat uv,string basef,
 
 void alarm_ctrl::clear()
 {
-	if (alarm_time.isempty())
-		return;
-	State_mes mes;
-	mes.getfromfile(mesname);
-	string filename = basefile + mes.tostring();
-	remove_dir(filename.c_str());
+    if (alarm_time.isempty())
+        return;
+    State_mes mes;
+    mes.getfromfile(mesname);
+    string filename = basefile + mes.tostring();
+    remove_dir(filename.c_str());
 
-	alarm_time.clear();
-	basefile.clear();
-	mesname.clear();
-	rgbname.clear();
-	irname.clear();
-	uvname.clear();
-	vedioname.clear();
+    alarm_time.clear();
+    basefile.clear();
+    mesname.clear();
+    rgbname.clear();
+    irname.clear();
+    uvname.clear();
+    vedioname.clear();
     port=0;
 }
 
 void alarm_ctrl::setstaytime(int t)
 {
-	State_mes now;
-	now.settime_now();
-	stay_time.set(now.year, now.mon, now.day, now.hour, now.min, now.sec + t);
+    State_mes now;
+    now.settime_now();
+    stay_time.set(now.year, now.mon, now.day, now.hour, now.min, now.sec + t);
 }
 
 bool alarm_ctrl::isstay()
 {
-	if (stay_time.isempty())
-		return false;
-	else
-	{
-		record_time cur_time;
-		cur_time.settimenow();
-		if (cur_time < stay_time)
-			return true;
-		else
-			return false;
-	}
+    if (stay_time.isempty())
+        return false;
+    else
+    {
+        record_time cur_time;
+        cur_time.settimenow();
+        if (cur_time < stay_time)
+            return true;
+        else
+            return false;
+    }
 }

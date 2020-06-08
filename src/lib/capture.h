@@ -214,8 +214,8 @@ public:
     //度温度接口
     //获取（x，y）的灰度值
     unsigned short getgray(int x,int y)
-	{
-                return ((WORD*)cm_pData)[x + 640 * y];
+    {
+        return ((WORD*)cm_pData)[x + 640 * y];
 	}
 	//将灰度值转化为温度
     float Get_tem(unsigned short nGray)
@@ -227,7 +227,10 @@ public:
 	//	area_type： 0精确区域 1粗略外接矩形
 	pair<float,Point> Area_tem(const vector<Point> &counter,char tem_type,char area_type);
     // 读取环境温度,出错时返回-999
-    double Get_envtem();
+    double Get_envtem()
+    {
+        return tenv;
+    }
 
     void fire_filter(vector<vector<Point>>& counters, float th_top, float th_bottom, char size_top, char size_bottom);
 
@@ -260,11 +263,11 @@ private:
     short IRUserID;
     LONG lUserID_UV;
 
-    // 485透明通道id
-    LONG lTranHandle;
-
-
-
+    // 485透明通道
+    LONG lTranHandle;   // 485透明通道id
+    double tenv = 0;    // 环境温度
+    void _Get_envtem();
+    friend void* rdsavemaxt(void*);
 
 
 public:
@@ -285,6 +288,7 @@ public:
     }
     ~capture()
     {
+        NET_DVR_SerialStop (lTranHandle);
         pthread_cancel(timerthid);
         if (capture_mode == 2)
             vcapture.release();

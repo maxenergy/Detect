@@ -85,8 +85,11 @@ int flash_dec::faultdetect()
         queue<double> &i2=f2.front().second;             //  特征队列
         while(!i2.empty())       // 队列的每一个元素是一个时间点的轮廓，统计符合条件的个数
         {
-            if(t2.front()!=lasttimeid[1] && t2.front() >= 49)
+            cout<< "area is "<<i2.front()<<endl;
+            if(t2.front()!=lasttimeid[1] && i2.front() >= 1000)
+            {
                 ++sum[1];
+            }
             lasttimeid[1]=t2.front();
             t2.pop();
             i2.pop();
@@ -94,7 +97,7 @@ int flash_dec::faultdetect()
         if(logout)
             logfile<<"      sum is: "<<sum[0]<<"  "<<sum[1]<<"\n";
 
-        if(sum[1]>=1)              // 分析结果
+        if(sum[1]>=2)              // 分析结果
         {
             result_counters.push_back(temporalctrl.getlastcounter(index));
             result = 1;
@@ -102,6 +105,7 @@ int flash_dec::faultdetect()
 
         index++;
         f1.pop();
+        f2.pop();
     }
 
 

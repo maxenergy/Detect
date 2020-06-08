@@ -152,14 +152,13 @@ private:
         double p = arcLength(c, true);
         return 4 * 3.14*a / (p*p);
     }
-    double f_num(const Counter &c)
+    double f_num(const Counter &c)                  //num
     {
         return 1;
     }
     double f_cofc(const Counter &c)				//  边界变化量
     {
         vector<double> result;
-
         vector<double> X;
         vector<double> Y;
 
@@ -185,18 +184,26 @@ private:
         double x1 = output1.at<double>(0, 0);
         double y1 = output2.at<double>(0, 0);
         double f1 = sqrt(x1*x1 + y1*y1);
-        for (int n = 0;n < input1.rows && n < 6;n++)
+        //cout << "c size is  "<<c.size()<<endl;
+        //cout <<"input1 size is  "<<input1.size()<<endl;
+        //cout <<"f1 is   "<<f1<<endl;
+        for (int n = 1;n < input1.rows && n < 6;n++)
         {
             double x = output1.at<double>(n, 0);
             double y = output2.at<double>(n, 0);
             double qf = sqrt(x*x + y*y) / f1;
             //cout << "(" << x << "," << y << ")	";
-            //result.push_back(qf);
+            result.push_back(qf);
         }
 
+        //cout << "qf: ";
         unsigned long long red = 0;
         for (double qf : result)
+        {
+            //cout << " " << qf;
             red = red * 1000 + (int)(qf * 1000);
+        }
+        //cout <<endl;
         return *((double *)(&red));
     }
 };

@@ -4,10 +4,6 @@
             <floorlimit>50.000000</floorlimit>
             <uplimit>9999.000000</uplimit>
         </rule>
-        <rule type="tdifference">
-            <floorlimit>60.000000</floorlimit>
-            <uplimit>80.000000</uplimit>
-        </rule>
     </level1>
     <level2>
         <rule type="tdev">

@@ -136,7 +136,6 @@ int main()
 
             //从设备更新图像数据
             mc->Vedio_Update();
-
             //检测此帧图像
 
 //            //明火检测
@@ -168,14 +167,14 @@ int main()
             //saveaf("/home/zxb/SRC_C/lab_data/fire/", mc->srcrgb, mc->srcir, mc->srcuv, vector<vector<Point>>(), fire_dec.result_counters, vector<vector<Point>>());
 
 
-            //放电检测
-            int Result_flash = flash_dec.detect();
-            if(true)
-            {
-                if(Result_flash==1)
-                    cout<<"Result_flash: "<<Result_flash<<endl;
-                imshow("Result_flash",flash_dec.result_pic);
-            }
+//            //放电检测
+//            int Result_flash = flash_dec.detect();
+//            if(true)
+//            {
+//                if(Result_flash==1)
+//                    cout<<"Result_flash: "<<Result_flash<<endl;
+//                imshow("Result_flash",flash_dec.result_pic);
+//            }
 //            if(Result_flash && !flash_dec.isstay())
 //            {
 //                cout<<"in"<<endl;

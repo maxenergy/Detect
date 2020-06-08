@@ -74,6 +74,7 @@ int fire_dec::faultdetect()
             logfile<<"  index "<<index<<" counter size is "<<t1.size()<<"\n";
         while(!i1.empty())                      //根据面积变化的情况确定是否是明火区域，可能还需要调整
         {
+            //cout << "area is "<< i1.front() <<" "<<endl;
             double th = 36;
             if (t1.front() != lasttimeid[0] && (i1.front() - last[0] > th || i1.front() - last[0] < -th))
                 ++sum[0];
@@ -119,6 +120,7 @@ int fire_dec::faultdetect()
             // get thisc 即本次的dct描述子
             double test = i4.front();
             unsigned long long tmpc = *(unsigned long long *)(&test);
+            cout << "dct is "<< tmpc <<" "<<endl;
             double thisc[5] = { 0 };
             for (int n = 0; n < 5; n++)
             {
@@ -131,7 +133,7 @@ int fire_dec::faultdetect()
             for(int n = 0; n < 5; n++)
                 dctdis += (thisc[n] - lastc[n])*(thisc[n] - lastc[n]);
             dctdis = sqrt(dctdis);
-
+            cout << "dctdis is "<< dctdis <<" "<<endl;
 
             double th = 0.0;
             if (t4.front() != lasttimeid[3] && (dctdis > th))

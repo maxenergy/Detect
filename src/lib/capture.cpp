@@ -327,7 +327,7 @@ bool capture::SDK_Connect()
     }
 
     // uv
-    lUserID_UV = NET_DVR_Login_V30("192.168.1.", 8000, "admin", "asdf1234", &struDeviceInfo);
+    lUserID_UV = NET_DVR_Login_V30("192.168.1.3", 8000, "admin", "asdf1234", &struDeviceInfo);
     if (lUserID_UV < 0)
     {
         printf("Login uv error, %d\n", NET_DVR_GetLastError());
@@ -344,7 +344,7 @@ bool capture::SDK_Connect()
         NET_DVR_Cleanup();
         return false;
     }
-
+    _Get_envtem();
     return true;
 }
 
@@ -394,7 +394,7 @@ bool capture::Vedio_Stream_Set()
     }
         // 设置定时获取和保存最高温度的线程
 
-    if(!pthread_create(&timerthid,NULL,rdsavemaxt,this))
+    if(pthread_create(&timerthid,NULL,rdsavemaxt,this) != 0)
     {
         cout<<"init rdsavemaxt thread failed!"<<endl;
         return false;
@@ -576,8 +576,8 @@ pair<float, Point> capture::Area_tem(const vector<Point>& counter, char tem_type
 }
 
 // 485接口返回的环境温度
-static double tenv = 0;
-double capture::Get_envtem()
+static double stenv = 0;
+void capture::_Get_envtem()
 {
     //通过透明通道发送数据
     LONG lSerialChan = 1;//使用485 时该值有效，从1 开始；232 时设置为0
@@ -588,10 +588,9 @@ double capture::Get_envtem()
         NET_DVR_SerialStop(lTranHandle);
         NET_DVR_Logout(lUserID);
         NET_DVR_Cleanup();
-        return -999;
     }
     sleep(1);
-    return tenv;
+    tenv = stenv;
 }
 
 void capture::fire_filter(vector<vector<Point>>& counters, float th_top, float th_bottom, char size_top, char size_bottom)
@@ -785,6 +784,7 @@ void *rdsavemaxt(void *captureptr)
         sleep(60);
         ptr->_rdsavemaxt();
     }
+    ptr ->_Get_envtem();
 }
 void capture::_rdsavemaxt()
 {
@@ -792,7 +792,6 @@ void capture::_rdsavemaxt()
     int outsize = 0;
     NetDev_GetConfig(IRUserID,ULIR_MEASURE_GET_MAXTEMP,&result,sizeof(result),&outsize);
 
-    // 此处还需要测试一下outbuf是不是int
     // 生成当前文件名
     time_t timep;
     time(&timep);
@@ -1015,7 +1014,6 @@ int basedec::faultdetect()
 void CALLBACK g_fSerialDataCallBack(LONG lSerialHandle, char *pRecvDataBuffer, DWORD dwBufSize, DWORD dwUser)
 {
     //…… 处理接收到的透传数据，pRecvDataBuffer 中存放接收到的数据
-    int result = ((unsigned char)pRecvDataBuffer[3])<<8 + (unsigned char)pRecvDataBuffer[4];
-    tenv = (double)result / 10;
-
+    unsigned short result = (((unsigned short)pRecvDataBuffer[3])<<8) + (unsigned short)pRecvDataBuffer[4];
+    stenv = (double)result / 10;
 }
